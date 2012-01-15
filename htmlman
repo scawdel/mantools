@@ -1,0 +1,272 @@
+#!/usr/bin/perl -w
+#
+# HTMLMan
+#
+# Convert help-markup into HTML files.
+# (c) Stephen Fryatt, 2002
+
+# The output type for literals in the file.
+$mode="HTML";
+
+# Formatting variables.
+set_new_indent (2);
+set_new_spacing (1);
+$all_lines = 0;
+
+# Set the entities that we recognise.  NB: this list must contain them in a plain text form.
+#%entities = ("lt",   "<",
+#             "gt",   ">",
+#             "quot", "\"",
+#             "amp",  "\e" # & goes to ESC, then is converted back to &
+#            );
+
+
+%defs = ("title", "");
+
+if (scalar(@ARGV) > 2) {
+  # Too many arguments, so assume the new format.
+
+  foreach $arg (@ARGV) {
+    if ($arg =~ /^-I(.+)/) {
+      $infile = $1;
+    } elsif ($arg =~ /^-O(.+)/) {
+      $outfile = $1;
+    } elsif ($arg =~ /^-D([^=]+)=(.*)/) {
+      $defs{$1} = $2;
+    }
+  }
+} else {
+  # Default to the parameters being <infile> <outfile> for backwards compatibility.
+
+  $infile = $ARGV[0];
+  $outfile = $ARGV[1];
+}
+
+# Open the input and output files -- there is only one output file used.
+open (INPUT, $infile) || die "Can't open input file $infile: $!\n";
+open (OUTPUT, ">".$outfile) || die "Can't open output file $outfile: $!\n";
+
+# Read the lines in one at a time and process them.
+while (defined ($line = <INPUT>))
+{
+  chomp($line);
+
+  if ($line =~ /^\s*<([^<>]*)>\s*$/)
+  {
+    %params = parse_tag ($1);
+
+    if ($params{'tag_name'} eq 'define')
+    {
+      # If it's already defined, then either we've defined it twice in the file,
+      # or the file definition has been overridden by a command line definition.
+
+      if (!defined($defs{$params{'name'}})) {
+        $defs{$params{'name'}} = $params{'value'};
+      }
+    }
+
+    elsif ($params{'tag_name'} eq 'chapter')
+    {
+      print OUTPUT "\n<div class=\"chapter\">\n";
+      print OUTPUT "<h2><a name=\"".$params{'file'}."\">".$params{'title'}."</a></h2>\n";
+    }
+
+    elsif ($params{'tag_name'} eq '/chapter')
+    {
+      print OUTPUT "</div>\n";
+    }
+
+    elsif ($params{'tag_name'} eq 'literal')
+    {
+      while (defined ($literal_line = <INPUT>) && $literal_line !~ /^<\/literal>$/)
+      {
+        if (uc($params{'mode'}) eq uc($mode))
+        {
+          while ($literal_line =~ /\$\$([a-z]+?)\$\$/)
+          {
+            $literal_line = "$`$defs{$1}$'";
+          }
+
+          print OUTPUT $literal_line;
+        }
+      }
+    }
+
+    elsif ($params{'tag_name'} eq 'subhead')
+    {
+      print OUTPUT "\n<h3>".$params{'title'}."</h3>\n";
+    }
+
+    elsif ($params{'tag_name'} eq 'codeblock')
+    {
+      print OUTPUT "\n<blockquote><pre>\n";
+      $all_lines = 1;
+    }
+
+    elsif ($params{'tag_name'} eq '/codeblock')
+    {
+      print OUTPUT "</blockquote></pre>\n";
+      $all_lines = 0;
+    }
+
+    elsif ($params{'tag_name'} eq 'box')
+    {
+      print OUTPUT "<blockquote>\n";
+    }
+
+    elsif ($params{'tag_name'} eq '/box')
+    {
+      print OUTPUT "</blockquote>\n\n";
+    }
+
+    elsif ($params{'tag_name'} eq 'list')
+    {
+      print OUTPUT "\n<ul>";
+    }
+
+    elsif ($params{'tag_name'} eq '/list')
+    {
+      print OUTPUT "</ul>\n";
+    }
+
+    elsif ($params{'tag_name'} eq 'definition')
+    {
+      print OUTPUT "\n<dl><dt><b>".$params{'target'}."</b></dt>\n<dd>\n";
+    }
+
+    elsif ($params{'tag_name'} eq '/definition')
+    {
+      print OUTPUT "</dd></dl>\n";
+    }
+  }
+  elsif ($line !~ /^\s*$/  || $all_lines)
+  {
+    output_line (OUTPUT, $line, $indent, $spacing);
+  }
+}
+
+
+
+# Process a line, containing any inline tags, and output the result.
+
+sub output_line
+{
+  my ($output, $line, $indent, $spacing) = @_;
+
+#  $line =~ s/<cite>(.*?)<\/cite>/<cite>$1<\/cite>/g;         # Citation - no effect
+#  $line =~ s/<code>(.*?)<\/code>/<code>$1<\/code>/g;         # Inline code - enclose in ""
+  $line =~ s/<command>(.*?)<\/command>/<code>$1<\/code>/g;         # Inline code - enclose in ""
+#  $line =~ s/<em>(.*?)<\/em>/<em>$1<\/em>/g;                 # Emphasis - To Upper
+  $line =~ s/<entry>(.*?)<\/entry>/<tt>$1<\/tt>/g;                # User entry
+  $line =~ s/<file>(.*?)<\/file>/<i>$1<\/i>/g;               # Filename - no effect
+  $line =~ s/<icon>(.*?)<\/icon>/<b>$1<\/b>/g;               # Icon labels - enclose in ''
+  $line =~ s/<key>(.*?)<\/key>/ucfirst $1/eg;    # Key names - initial capital
+  $line =~ s/<menu>(.*?)<\/menu>/<b>$1<\/b>/g;               # Menu entries - enclose in ''
+  $line =~ s/<mouse>(.*?)<\/mouse>/ucfirst $1/eg; # Mouse buttons - initial capital
+  $line =~ s/<param>(.*?)<\/param>/<tt>$1<\/tt>/g;
+#  $line =~ s/<strong>(.*?)<\/strong>/<strong>$1<\/strong>/g; # Strong Emphasis - To Upper
+  $line =~ s/<window>(.*?)<\/window>/<b>$1<\/b>/g;           # Window names - no effect
+
+  # Convert all the hyperlinks into HTML format.
+  while ($line =~ /<link ref="(.*?)">(.*?)<\/link>/)
+  {
+    $line = "$`<a href=\"#$1\">$2</a>$'";
+  }
+
+  # Finally, expand all the entities out.
+
+#  while ($line =~ /&(.*?);/)
+#  {
+#    $line = "$`$entities{$1}$'";
+#  }
+#  $line =~ s/\e/&/g; # Restore the &s after the entities have gone.
+
+
+  # Perform the linewrap on the string, indenting as required.
+
+#  $line .= "\n";
+#  $line =~ s/(.{0,72})[\s]+/"$1\n"." "x$indent/eg;
+
+  if (!$all_lines)
+  {
+    $line = "<p>".$line."</p>";
+  }
+
+  # Bullet the start of the line if necessary
+  if ($line =~ /^<p><li>/)
+  {
+    $line =~ s/^<p><li>\s*/"<li><p>"/e;
+    #$line =~ s/<\/p>$/<\/li>/;
+  }
+
+  # Remove any trailing whitespace from the line and then add in newlines for the required
+  # linespacing.
+
+  $line =~ s/\s*$//;
+#  $line .= "\n"x$spacing;
+
+  if (!$all_lines)
+  {
+    print OUTPUT "\n";
+  }
+  print $output "$line\n";
+}
+
+
+
+
+sub set_new_indent
+{
+  my ($new) = @_;
+
+  push (@indents, $indent);
+  $indent = $new;
+}
+
+sub restore_indent
+{
+  $indent = pop (@indents);
+}
+
+sub set_new_spacing
+{
+  my ($new) = @_;
+
+  push (@spacings, $spacing);
+  $spacing = $new;
+}
+
+sub restore_spacing
+{
+  $spacing = pop (@spacings);
+}
+
+
+
+
+# Parse a teg, returning a hash containing a set of attribute/value pairs.
+
+sub parse_tag
+{
+  my ($tag) = @_;
+  my (%attributes, @items, $item, $name, $value);
+
+  # Convert the spaces outside of quotes into \n and split on these.
+  $tag =~ s/\s+([^="]*?=)/\n$1/g;
+  @items = split (/\n/, $tag);
+
+  foreach $item (@items) {
+    ($name, $value) = split (/=/, $item);
+    if (defined($value) && $value ne "")
+    {
+      $value =~ s/^\s*"(.*)"\s*$/$1/; # Strip quotes and external whitespace.
+      $attributes{$name} = $value;
+    }
+    else
+    {
+      $attributes{'tag_name'} = $name;
+    }
+  }
+
+  return %attributes;
+}

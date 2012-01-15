@@ -1,0 +1,581 @@
+#!/usr/bin/perl
+#
+# StrongMan
+#
+# Convert help-markup into StrongHelp files
+# (c) Stephen Fryatt, 2002
+
+# The output type for literals in the file.
+$mode="Strong";
+
+# Flags to indicate when we are outputting a bullet list, a chapter and a file.
+$all_lines = 0;
+set_new_list_value (0, 0);
+set_new_spacing (1);
+set_new_indent (0);
+
+$chapter = 0;
+$file    = 0;
+
+$new_line = 1;
+
+%defs = ("title", "");
+
+# Set the entities that we recognise.  NB: this list must contain them in a form that is ready
+# to go into a StrongHelp manual.
+%entities = ("lt",  '\<',
+             "gt",  '\>',
+             "quot",'"',
+             "amp", "\e"
+            );
+
+if (scalar(@ARGV) > 2) {
+  # Too many arguments, so assume the new format.
+
+  foreach $arg (@ARGV) {
+    if ($arg =~ /^-I(.+)/) {
+      $infile = $1;
+    } elsif ($arg =~ /^-O(.+)/) {
+      $outfile = $1;
+    } elsif ($arg =~ /^-D([^=]+)=(.*)/) {
+      $defs{$1} = $2;
+    }
+  }
+} else {
+  # Default to the parameters being <infile> <outfile> for backwards compatibility.
+
+  $infile = $ARGV[0];
+  $outfile = $ARGV[1];
+}
+
+# Open the input and output files -- there is only one output file used.
+open (INPUT, $infile) || die "Can't open input file $infile: $!\n";
+$output = $outfile;
+unless ($output =~ /\/$/)
+{
+  $output .= '/';
+}
+
+if (!(-d $output))
+{
+  mkdir $output, 0755;
+}
+
+#Find the chapters
+$chapters = 0;
+
+while (defined ($line = <INPUT>))
+{
+  chomp($line);
+
+  if ($line =~ /^\s*<([^<>]*)>\s*$/)
+  {
+    %params = parse_tag ($1);
+
+    if ($params{'tag_name'} eq 'chapter')
+    {
+      $chapters[$chapters++] = "<".$params{'title'}."=>".$params{'file'}.">";
+    }
+  }
+}
+
+seek (INPUT, 0, 0);
+
+$current_chapter = 0;
+
+#Read the lines one at a time and process them.
+while (defined ($line = <INPUT>))
+{
+  chomp($line);
+
+  if ($line =~ /^\s*<([^<>]*)>\s*$/)
+  {
+    %params = parse_tag ($1);
+
+    if ($params{'tag_name'} eq 'document')
+    {
+      $defs{'title'} = $params{'title'};
+    }
+
+    elsif ($params{'tag_name'} eq 'define')
+    {
+      # If it's already defined, then either we've defined it twice in the file,
+      # or the file definition has been overridden by a command line definition.
+
+      if (!defined($defs{$params{'name'}})) {
+        $defs{$params{'name'}} = $params{'value'};
+      }
+    }
+
+    elsif ($params{'tag_name'} eq '/chapter')
+    {
+    if ($chapter == 1)
+      {
+        restore_indent ();
+        output_command ("#Indent\n");
+        output_command ("#Line\n");
+        $link_line = "";
+        if ($current_chapter > 0)
+        {
+          $link_line .= "è Previous: ".$chapters[$current_chapter - 1];
+        }
+
+        if ($current_chapter > 0 && $current_chapter < $chapters-1)
+        {
+          $link_line .= "  ";
+        }
+        if ($current_chapter < $chapters-1)
+        {
+          $link_line .= "è Next: ".$chapters[$current_chapter + 1];
+        }
+
+        print_line ($link_line."\n");
+        $current_chapter++;
+      }
+
+      if ($file == 1)
+      {
+        close (OUTPUT);
+      }
+
+      $chapter = 0;
+      $file = 0;
+    }
+
+    elsif ($params{'tag_name'} eq 'chapter')
+    {
+      # If the line starts with a '[', it is a new chapter...
+      # Tidy up from anything that was happening before -- end a bullet list
+      # if one was being written, write the end-of-chapter blurb and close
+      # any file that is open.
+      if ($chapter == 1)
+      {
+        restore_indent ();
+        output_command ("#Indent\n");
+        output_command ("#Line\n");
+        $link_line = "";
+        if ($current_chapter > 0)
+        {
+          $link_line += "è Previous: ".$chapters[$current_chapter - 1];
+        }
+
+        if ($current_chapter > 0 && $current_chapter < $chapters-1)
+        {
+          $link_line += "  ";
+        }
+
+        if ($current_chapter < $chapters-1)
+        {
+          $link_line + "è Next: ".$chapters[$current_chapter + 1];
+        }
+
+        print_line ($link_line."\n");
+        $current_chapter++;
+      }
+
+      if ($file == 1)
+      {
+        close (OUTPUT);
+      }
+
+      # Extract the chapter name and file name from the line and open a new file.
+      open (OUTPUT, ">".$output.$params{'file'}) || die "Can't open output file: $!\n";
+
+      # Output the start of the chapter and set the flags.
+      print_line ($defs{'title'}.": ".$params{'title'}."\n");
+      print_line ("{fh1:".$params{'title'}."}\n");
+      output_command ("#Line\n");
+      set_new_indent ($indent + 2);
+      output_command ("#Indent $indent\n");
+      $chapter = 1;
+      $file = 1;
+    }
+
+    elsif ($params{'tag_name'} eq 'literal')
+    {
+      # If the line starts with '{' it is a literal...
+      # Tidy up from anything that was happening before -- end a bullet list if
+      # one was being written, write the end-of-chapter blurb and close any file
+      # that is open.
+      if ($chapter == 1)
+      {
+        restore_indent ();
+        output_command ("#Indent\n");
+      }
+
+      if ($file == 1)
+      {
+        close (OUTPUT);
+        $file = 0;
+      }
+
+      # If the literal is for the this type of file, open a new file for this
+      # session.
+      if (uc($params{'mode'}) eq uc($mode))
+      {
+        open (OUTPUT, ">".$output.$params{'file'}) || die "Can't open output file: $!\n";
+        $file = 1;
+      }
+
+      # Step through the literal data line by line.  If necessary, write it out
+      # to an output file at the same time.
+      while (defined ($literal_line = <INPUT>) && $literal_line !~ /^<\/literal>$/)
+      {
+        if (uc($params{'mode'}) eq uc($mode))
+        {
+          while ($literal_line =~ /\$\$([a-z]+?)\$\$/)
+          {
+            $literal_line = "$`$defs{$1}$'";
+          }
+
+          print OUTPUT $literal_line;
+        }
+      }
+    }
+
+    elsif ($params{'tag_name'} eq 'subhead')
+    {
+      $line = substr ($line, 1, 77);
+      print_line ("{fh2:".$params{'title'}."}\n\n");
+    }
+
+    elsif ($params{'tag_name'} eq 'codeblock')
+    {
+      set_new_spacing (0);
+      set_new_indent ($indent + 2);
+      print_line("\n");
+      output_command ("#Indent $indent\n");
+      output_command ("#FCode\n");
+      $all_lines = 1;
+    }
+
+    elsif ($params{'tag_name'} eq '/codeblock')
+    {
+      restore_spacing ();
+      output_command ("#F\n");
+      restore_indent ();
+      output_command ("#Indent\n");
+      if ($spacing > 0)
+      {
+        print_line ("\n"x$spacing);
+      }
+      $all_lines = 0;
+    }
+
+    elsif ($params{'tag_name'} eq 'box')
+    {
+      set_new_spacing (-1);
+      output_command ("#F*");
+    }
+
+    elsif ($params{'tag_name'} eq '/box')
+    {
+      restore_spacing ();
+      output_command ("#F\n");
+      if ($spacing > 0)
+      {
+        print_line ("\n"x$spacing);
+      }
+    }
+
+    elsif ($params{'tag_name'} eq 'list')
+    {
+      if ($spacing < 0)
+      {
+        print_line ("\n" x abs($spacing));
+      }
+
+      if (defined ($params{'spacing'}) && $params{'spacing'} == 1)
+      {
+        set_new_spacing (-1);
+      }
+      else
+      {
+        set_new_spacing (0);
+      }
+
+      if (defined ($params{'type'}))
+      {
+        if ($params{'type'} eq 'num')
+        {
+          set_new_list_value (1, 2);
+          set_new_indent ($indent + 1);
+        }
+        elsif ($params{'type'} eq 'upper')
+        {
+          set_new_list_value (1, 3);
+          set_new_indent ($indent + 1);
+        }
+        elsif ($params{'type'} eq 'lower')
+        {
+          set_new_list_value (1, 4);
+          set_new_indent ($indent + 1);
+        }
+        else
+        {
+          set_new_list_value (0, 1);
+          set_new_indent ($indent + 1);
+        }
+      }
+      else
+      {
+        set_new_list_value (0, 1);
+        set_new_indent ($indent + 1);
+      }
+
+      if ($spacing == 0)
+      {
+        output_command ("#Indent $indent\n");
+      }
+      else
+      {
+        output_command ("#Indent $indent");
+      }
+    }
+
+    elsif ($params{'tag_name'} eq '/list')
+    {
+      restore_list_value ();
+      restore_spacing ();
+      restore_indent ();
+      output_command ("#Indent\n");
+      if ($spacing > 0)
+      {
+        print_line ("\n"x$spacing);
+      }
+    }
+
+    elsif ($params{'tag_name'} eq 'definition')
+    {
+      output_line (OUTPUT, "{f*:".$params{'target'}."}", $spacing);
+      set_new_spacing (-1);
+      set_new_indent ($indent + 2);
+      output_command ("#Indent $indent");
+    }
+
+    elsif ($params{'tag_name'} eq '/definition')
+    {
+      restore_spacing ();
+      restore_indent ();
+      output_command ("#Indent\n");
+      if ($spacing > 0)
+      {
+        print_line ("\n"x$spacing);
+      }
+    }
+    elsif ($params{'tag_name'} eq 'comdef')
+    {
+      output_line (OUTPUT, "{f*:".$params{'target'}."} {f*/:".$params{'params'}."}", $spacing);
+      set_new_spacing (-1);
+      set_new_indent ($indent + 2);
+      output_command ("#Indent $indent");
+    }
+
+    elsif ($params{'tag_name'} eq '/comdef')
+    {
+      restore_spacing ();
+      restore_indent ();
+      output_command ("#Indent\n");
+      if ($spacing > 0)
+      {
+        print_line ("\n"x$spacing);
+      }
+    }
+  }
+  elsif ($line !~ /^\s*$/ || $all_lines)
+  {
+    # If the line isn't any of the above and isn't pure whitespace, it must be a paragraph.
+    # Process that, first by munging the styles into the appropriate StrongHelp font codes.
+    output_line (OUTPUT, $line, $spacing);
+  }
+}
+
+
+
+sub output_command
+{
+  my ($command) = @_;
+
+  if (!$new_line)
+  {
+    print OUTPUT "\n";
+  }
+  print_line ("$command");
+}
+
+sub print_line
+{
+  my ($line) = @_;
+
+  print OUTPUT $line;
+
+  $new_line = ($line =~ /\n$/);
+}
+
+
+# --------------------------------------------------------------------------------------------------
+# Stacking functions
+
+sub set_new_list_value
+{
+  my ($value, $type) = @_;
+
+  push (@list_vals, $list_value);
+  $list_value = $value;
+  push (@list_types, $list_type);
+  $list_type = $type;
+}
+
+sub restore_list_value
+{
+  $list_value = pop (@list_vals);
+  $list_type = pop (@list_types);
+}
+
+sub set_new_indent
+{
+  my ($new) = @_;
+
+  push (@indents, $indent);
+  $indent = $new;
+}
+
+sub restore_indent
+{
+  $indent = pop (@indents);
+}
+
+sub set_new_spacing
+{
+  my ($new) = @_;
+
+  push (@spacings, $spacing);
+  $spacing = $new;
+}
+
+sub restore_spacing
+{
+  $spacing = pop (@spacings);
+}
+
+# --------------------------------------------------------------------------------------------------
+# Process a line, containing any inline tags, and output the result.
+
+sub output_line
+{
+  my ($output, $line, $spacing) = @_;
+
+  $line =~ s/<cite>(.*?)<\/cite>/{f\/:$1}/g;      # Citation - no effect
+  $line =~ s/<code>(.*?)<\/code>/{fcode:$1}/g;    # Typed - enclose in ""
+  $line =~ s/<command>(.*?)<\/command>/{fcode:$1}/g;    # Typed - enclose in ""
+  $line =~ s/<em>(.*?)<\/em>/{f\/:$1}/g;          # Emphasis - To Upper
+  $line =~ s/<entry>(.*?)<\/entry>/{fcode:$1}/g;    # User entry - enclose in ""
+  $line =~ s/<file>(.*?)<\/file>/{f\/:$1}/g;      # Filename - no effect
+  $line =~ s/<icon>(.*?)<\/icon>/{f*:$1}/g;       # Icon labels - enclose in ''
+  $line =~ s/<key>(.*?)<\/key>/ucfirst $1/eg;    # Key names - initial capital
+  $line =~ s/<menu>(.*?)<\/menu>/{f*:$1}/g;       # Menu entries - enclose in ''
+  $line =~ s/<mouse>(.*?)<\/mouse>/ucfirst $1/eg; # Mouse buttons - initial capital
+  $line =~ s/<param>(.*?)<\/param>/{fcode:$1}/g;    # Parameter - code
+  $line =~ s/<strong>(.*?)<\/strong>/{f*:$1}/g;   # Strong Emphasis - To Upper
+  $line =~ s/<window>(.*?)<\/window>/{f*:$1}/g;   # Window names - no effect
+
+  # Any \s in the line must be escaped to \\.
+  $line =~ s/([\\#])/\\$1/g;
+
+  # Convert all the hyperlinks into StrongHelp format.
+  while ($line =~ /<link ref="(.*?)">(.*?)<\/link>/)
+  {
+    $link_prefix = $`;
+    $link_ref = $1;
+    $link_text = $2;
+    $link_postfix = $';
+
+    if ($link_ref =~ /^http:/)
+    {
+      $link_ref = "#url $link_ref";
+    }
+    $line = "$link_prefix<$link_text=>$link_ref>$link_postfix";
+  }
+
+  # Finally, expand all the entities out.
+  while ($line =~ /&(.*?);/)
+  {
+    $line = "$`$entities{$1}$'";
+  }
+  $line =~ s/\e/&/g; # Restore the &s after the entities have gone.
+
+
+  # If we are in bullet mode, insert a tab after any bullet (or at the start of the line).
+  if ($list_type != 0)
+  {
+    if ($line =~ /^<li>/)
+    {
+      if ($list_type == 1)
+      {
+        $indent_string = 'è';
+      }
+      elsif ($list_type == 2)
+      {
+        $indent_string = $list_value++.".";
+      }
+      elsif ($list_type == 3)
+      {
+        $indent_string = sprintf ("%c)", 64+$list_value++);
+      }
+      elsif ($list_type == 4)
+      {
+        $indent_string = sprintf ("%c)", 96+$list_value++);
+      }
+
+      $line =~ s/^<li>\s*/$indent_string."\t"/e;
+    }
+    else
+    {
+      $line = "\t".$line;
+    }
+  }
+
+  # Under certain curcumstances, we don't put a blank line after the paragraph.
+  if ($spacing != 0)
+  {
+    if ($spacing > 0)
+    {
+      $line .= "\n" x $spacing
+    }
+    else
+    {
+      $line = "\n"x abs($spacing) . $line;
+    }
+  }
+
+  # Output the line of text.
+  print_line ("$line\n");
+}
+
+# --------------------------------------------------------------------------------------------------
+# Parse a teg, returning a hash containing a set of attribute/value pairs.
+
+sub parse_tag
+{
+  my ($tag) = @_;
+  my (%attributes, @items, $item, $name, $value);
+
+  # Convert the spaces outside of quotes into \n and split on these.
+  $tag =~ s/\s+([^="]*?=)/\n$1/g;
+  @items = split (/\n/, $tag);
+
+  foreach $item (@items) {
+    ($name, $value) = split (/=/, $item);
+    if ($value ne "")
+    {
+      $value =~ s/^\s*"(.*)"\s*$/$1/; # Strip quotes and external whitespace.
+      $attributes{$name} = $value;
+    }
+    else
+    {
+      $attributes{'tag_name'} = $name;
+    }
+  }
+
+  return %attributes;
+}
