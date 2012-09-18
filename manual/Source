@@ -1,0 +1,358 @@
+<document title="ManTools">
+<define name="version" value="1.00">
+<define name="date" value="18 September 2002" length=30 align="right">
+
+
+
+
+<literal mode="Strong" file="!Root">
+ManTools
+#SpriteFile Sprites
+#Sprite 8,0 Logo
+#Align Right
+{f*/:A flexible file search utility for RISC OS†}
+Version $$version$$ ($$date$$) 
+#Below
+#Line
+#Align Centre
+Locate is {f*:Freeware}: please read the <License>
+
+#Indent 2
+#Table Columns 4
+è <Introduction>
+è <Installation>
+
+è <Markup>
+è <Viewing the results=>Results>
+è <Advanced use=>Advanced>
+è <Configuration>
+è <Filer Action=>Plugin>
+
+è <Version History=>History>
+è <Future Plans=>ToDo>
+#Endtable
+#Indent
+#Line
+#Align Left
+If you have any comments about Locate, or would like to report any bugs that you find, you can email me at the address below.
+
+Updates to Locate and more programs for RISC OS computers can be found on my website at <http://www.stevefryatt.org.uk/software/=>#url>.
+
+#Align Centre
+© Stephen Fryatt, 2001 (<steve@stevefryatt.org.uk=>#url mailto:steve@stevefryatt.org.uk>)
+Filetype Menu code provided by Harriet Bazley
+
+A plain text version of this manual is available <here=>*Filer_Run wibble>.
+#Align Left
+</literal>
+
+
+
+
+<literal mode="Text">
+=============================================================================
+ManTools - Application manual creation tools                     Version $$version$$
+
+(C) Stephen Fryatt, 2002                       $$date$$
+=============================================================================
+</literal>
+
+
+
+
+
+<literal mode="HTML">
+<html>
+<head>
+<title>Locate</title>
+</head>
+
+<body>
+<h1 align="center">Locate</h1>
+<p align="center"><b>Flexible file search for RISC OS</b> - &copy; Stephen Fryatt, 2001<br>
+Version $$version$$ ($$date$$)</p>
+
+</literal>
+
+
+
+
+
+<chapter title="License" file="License">
+
+<cite>ManTools</cite> are <strong>Freeware</strong>.  Copyright is held by the author, Stephen Fryatt, 2002.
+
+<cite>ManTools</cite> may be copied freely, so long as they remain unaltered with all their files and documentation intact.
+
+If you wish to distribute <cite>ManTools</cite>, please contact me to get my permission. This is so that I can ensure that you have the latest version available. <cite>ManTools</cite> may not be sold, although Public Domain libraries may charge for the cost of discs.
+
+No guarantee is made as to the suitability or stability of <cite>ManTools</cite> for any particular purpose.  No liability can be accepted by the author for any problems or damage caused by the use of <cite>ManTools</cite>.
+
+</chapter>
+
+
+
+
+<chapter title="Introduction" file="Introduction">
+
+<cite>ManTools</cite> are a set of Perl scripts intended for generating StrongHelp, HTML and plain text help files from a single source file.  The intention was to make it easier to supply a plain text version of the StrongHelp manual supplied with the software I wrote.
+
+The manuals for use with <cite>ManTools</cite> are marked up in an HTML or XML like way, using tags enclosed in angle brackets (like &lt;this&gt;).  Unlike HTML, the makup tags have a strong bias towards producing documentation for RISC OS applications.
+
+</chapter>
+
+
+
+
+
+
+
+
+<chapter title="Markup language" file="Markup">
+
+The markup tags used are similar to HTML, but the whole structure is simplified a bit.  All tags are enclosed in angle brackets (like &lt;this&gt;) and reserved characters are inserted using the standard entities starting with ampersand.
+
+Unlike in HTML, paragraphs are not enclosed in <code>&lt;p&gt; ... &lt;/p&gt;</code> tags.  Instead, each paragraph must be on one line in the file, with one or more newlines at the end.  Using a text editor that supports soft-wrap (ie. not <cite>Edit</cite>) will help to make this easier.
+
+
+<subhead title="Block tags">
+
+Block tags must appear on a line of their own.  Some of them have a closing tag, although this is not universal.  Those that are closed apply to one or more whole paragraphs that are located between the tags.
+
+<definition target="&lt;document ...&gt;">
+The <code>&lt;document ...&gt;</code> tag appears at the top of a document and supplies details about that document.  It is not closed.
+
+The defined attributes are:
+
+<list>
+<li><code>title</code>: the title of the document.  Used to prefix chapter titles in <cite>StrongHelp</cite> title-bars.
+</list>
+</definition>
+
+
+<definition target="&lt;literal ...&gt; ... &lt;/literal&gt;">
+The <code>&lt;literal ...&gt; ... &lt;/literal&gt;</code> tag pair enclose a block of text that will be written to a specific type of output file.  The block is written with no translation apart from the insertion of literals.
+
+The defined attributes are:
+
+<list>
+<li><code>mode</code>: the output mode that will output the text.
+<li><code>file</code>: the file name if multiple output files are produced.
+</list>
+</definition>
+
+
+<definition target="&lt;chapter ...&gt; ... &lt;/chapter&gt;">
+The <code>&lt;chapter ...&gt; ... &lt;/chapter&gt;</code> tag pair enclose a block of text that forms a chapter in a document.  Depending upon the type of manual being produced, this will either form a section of text with a main heading above it, or it will be a separate page.
+
+The defined attributes are:
+
+<list>
+<li><code>title</code>: the title of the chapter as used in the document.
+<li><code>file</code>: the file name or link attribute.  This is used to reference the chapter in the <code>&lt;link ...&gt;</code> tag and will be used as a filename if multiple output files are produced.
+</list>
+</definition>
+
+
+<definition target="&lt;subhead ...&gt;">
+The <code>&lt;subhead ...&gt;</code> tag appears in a chapter and inserts a sub heading at that point.  It is not closed.
+
+The defined attributes are:
+
+<list>
+<li><code>title</code>: the title of the subsection.
+</list>
+</definition>
+
+
+<definition target="&lt;list&gt; ... &lt;/list&gt;">
+The <code>&lt;list ...&gt; ... &lt;/list&gt;</code> tag pair enclose a bullet-point list.  The paragraphs between the tags are indented as a list and those with <code>&lt;li&gt;</code> at the start are given a bullet point.
+
+The defined attributes are:
+
+<list>
+<li><code>type</code>: the type of list.  This can be <code>bullet</code>, <code>num</code>, <code>upper</code> or <code>lower</code>.  The default is bullet.
+
+<li><code>spacing</code>: the line spacing.  This is either <code>0</code> or <code>1</code>; the default is 0.
+</list>
+</definition>
+
+
+<definition target="&lt;codeblock&gt; ... &lt;/codeblock&gt;">
+The <code>&lt;codeblock ...&gt; ... &lt;/codeblock&gt;</code> tag pair enclose a section of code or literal text.  All lines (including blank ones) are output to the file.  A monospace font and indentation are used if applicable.
+
+The are no defined attributes.
+</definition>
+
+
+<definition target="&lt;box&gt; ... &lt;/box&gt;">
+The <code>&lt;box ...&gt; ... &lt;/box&gt;</code> tag pair enclose a section of text that is to be highligted or stand out from the remaining copy (such as a 'box' in a magazine).
+
+The are no defined attributes.
+</definition>
+
+
+<definition target="&lt;definition ...&gt; ... &lt;/definition&gt;">
+The <code>&lt;definition ...&gt; ... &lt;/definition&gt;</code> tag pair enclose a definition of a piece of text (the target).  This is equivalent to the <code>&lt;dl&gt;&lt;dt&gt;&lt;dd&gt;</code> structure in HTML.
+
+The defined attributes are:
+
+<list>
+<li><code>target</code>: the text being defined by the content of the definition block.
+</list>
+</definition>
+
+
+<subhead title="In-line tags">
+
+Unlike block tags, inline tags appear within a line of text.  The apply formatting to individual words or characters, as opposed to entire paragraphs.
+
+<definition target="&lt;link ...&gt; ... &lt;/link&gt;">
+The <code>&lt;link ...&gt; ... &lt;/link&gt;</code> tag pair enclose a hyperlink, that will be used in output formats that support these.
+
+The defined attributes are:
+
+<list>
+<li><code>ref</code>: the <code>file</code> attribute from a <code>&lt;chapter ...&gt;</code> tag pair elsewhere in the document, defining the location to jump to.
+</list>
+</definition>
+
+<definition target="Semantic tags">
+There are several semantic tags that can be used to apply meaning to pieces of text.  These are:
+
+<list>
+<li><code>&lt;cite&gt;</code>: indicates a citation.
+
+<li><code>&lt;code&gt;</code>: identifies an inline block of code.
+
+<li><code>&lt;em&gt;</code>: emphasises the text.
+
+<li><code>&lt;file&gt;</code>: shows a file name or path.
+
+<li><code>&lt;icon&gt;</code>: indicates an icon (button) label.
+
+<li><code>&lt;key&gt;</code>: indicates a key name.
+
+<li><code>&lt;menu&gt;</code>: marks a menu entry.
+
+<li><code>&lt;mouse&gt;</code>: indicates a mouse button.
+
+<li><code>&lt;strong&gt;</code>: strongly emphasises the text.
+
+<li><code>&lt;window&gt;</code>: marks a window title.
+</list>
+</definition>
+
+</chapter>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<literal mode="Text">
+
+
+Updates and Contacting Me
+-------------------------
+
+  If you have any comments about ManTools, or would like to report any bugs
+  that you find, you can email me at the address below.
+
+  Updates to ManTools and more programs for RISC OS computers can be found
+  on my website at http://www.stevefryatt.org.uk/software/
+
+  Stephen Fryatt
+  email: steve@stevefryatt.org.uk
+</literal>
+
+
+
+
+<literal mode="Strong" file="!Configure">
+# Configure file for StrongHelp
+# Lines starting with "# " are comments (Note the space)
+# Lines starting with "#Commands" and "#End" are *not* comments.
+
+#Commands
+
+# f0  = Sassoon.Primary           14   Bold  1  Italic  2  Both  3
+# f1  = Sassoon.Primary.Bold      14   Bold  1  Italic  2  Both  3
+# f2  = Homerton.Medium.Oblique   14   Bold  1  Italic  2  Both  3
+# f3  = Homerton.Bold.Oblique     14   Bold  1  Italic  2  Both  3
+
+# The Body font
+
+f0  = Trinity.Medium          14   Bold  1  Italic  2  Both  3
+f1  = Trinity.Bold            14   Bold  1  Italic  2  Both  3
+f2  = Trinity.Medium.Italic   14   Bold  1  Italic  2  Both  3
+f3  = Trinity.Bold.Italic     14   Bold  1  Italic  2  Both  3
+f4  = Trinity.Medium          10
+
+# The Headline fonts
+
+f10 = Homerton.Bold           16
+f11 = Homerton.Bold.Oblique   14
+f12 = Trinity.Bold            14
+f13 = Trinity.Bold.Italic     12
+f14 = Trinity.Medium          10
+f15 = Trinity.Medium.Italic   8
+
+# The fonts used for fCode
+
+f20 = Corpus.Medium           14   Bold 21  Italic 22  Both 23
+f21 = Corpus.Bold             14   Bold 21  Italic 22  Both 23
+f22 = Corpus.Medium.Oblique   14   Bold 21  Italic 22  Both 23
+f23 = Corpus.Bold.Oblique     14   Bold 21  Italic 22  Both 23
+
+# Fonts 24 to 31 are reserved for the manuals themselves.
+
+# The styles..
+
+fStd       = f0
+fLink      = f_
+fStrong    = f*
+fEmphasis  = f/
+fUnderline = f_
+fCode      = f20
+fCite      = f/
+
+fH1        = f10
+fH2        = f11
+fH3        = f12
+fH4        = f13
+fH5        = f14
+fH6        = f15
+
+# Set default background and font
+
+#Background rgb 255,255,255
+Background wimp 1
+fStd
+
+#End
+</literal>
+
+
+
+
+<literal mode="HTML">
+
+<hr noshade>
+<h2>Updates and Contacting Me</h2>
+
+<p>If you have any comments about <cite>ManTools</cite>, or would like to report any bugs that you find, you can email me at the address below.</p>
+
+<p>Updates to <cite>ManTools</cite> and more programs for RISC OS computers can be found on my website at <a href="http://www.stevefryatt.org.uk/software/">http://www.stevefryatt.org.uk/software/</a></p>
+
+<p>Stephen Fryatt (email: <a href="mailto:steve@stevefryatt.org.uk">steve@stevefryatt.org.uk</a>)</p>
+</body>
+</html>
+</literal>
