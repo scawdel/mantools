@@ -11,7 +11,7 @@ ManTools
 #Sprite 8,0 Logo
 #Align Right
 {f*/:A flexible file search utility for RISC OS }
-Version $$version$$ ($$date$$) 
+Version $$version$$ ($$date$$)
 #Below
 #Line
 #Align Centre
@@ -80,13 +80,13 @@ Version $$version$$ ($$date$$)</p>
 
 <chapter title="License" file="License">
 
-<cite>ManTools</cite> are <strong>Freeware</strong>.  Copyright is held by the author, Stephen Fryatt, 2002.
+<cite>ManTools</cite> are licensed under the EUPL, Version 1.1 only (the "Licence"); you may not use this work except in compliance with the Licence.
 
-<cite>ManTools</cite> may be copied freely, so long as they remain unaltered with all their files and documentation intact.
+You may obtain a copy of the Licence at http://joinup.ec.europa.eu/software/page/eupl
 
-If you wish to distribute <cite>ManTools</cite>, please contact me to get my permission. This is so that I can ensure that you have the latest version available. <cite>ManTools</cite> may not be sold, although Public Domain libraries may charge for the cost of discs.
+Unless required by applicable law or agreed to in writing, software distributed under the Licence is distributed on an &quot;<strong>as is</strong>&quot; basis, <strong>without warranties or conditions of any kind</strong>, either express or implied.
 
-No guarantee is made as to the suitability or stability of <cite>ManTools</cite> for any particular purpose.  No liability can be accepted by the author for any problems or damage caused by the use of <cite>ManTools</cite>.
+See the Licence for the specific language governing permissions and limitations under the Licence.
 
 </chapter>
 

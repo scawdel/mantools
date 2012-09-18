@@ -87,6 +87,7 @@ MENUGENFLAGS := -d
 
 MANUAL := manual
 OUTDIR := build
+LICENCE := Licence,fff
 
 
 # Set up the named target files.
@@ -118,12 +119,9 @@ $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 
 release: clean all
 	$(RM) ../$(ZIPFILE)
-	(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(README))
-	(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(EXECUTABLES))
+	(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(README) $(LICENCE) $(EXECUTABLES))
 	$(RM) ../$(SRCZIPFILE)
-	$(ZIP) $(ZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR)
-	$(ZIP) $(ZIPFLAGS) ../$(SRCZIPFILE) $(MANUAL)
-	$(ZIP) $(ZIPFLAGS) ../$(SRCZIPFILE) Makefile
+	$(ZIP) $(ZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR) $(MANUAL) Makefile
 
 
 # Build a backup Zip file
