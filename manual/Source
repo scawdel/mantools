@@ -1,50 +1,6 @@
 <document title="ManTools">
-<define name="version" value="1.00">
-<define name="date" value="18 September 2002" length=30 align="right">
-
-
-
-
-<literal mode="Strong" file="!Root">
-ManTools
-#SpriteFile Sprites
-#Sprite 8,0 Logo
-#Align Right
-{f*/:A flexible file search utility for RISC OS†}
-Version $$version$$ ($$date$$)
-#Below
-#Line
-#Align Centre
-Locate is {f*:Freeware}: please read the <License>
-
-#Indent 2
-#Table Columns 4
-è <Introduction>
-è <Installation>
-
-è <Markup>
-è <Viewing the results=>Results>
-è <Advanced use=>Advanced>
-è <Configuration>
-è <Filer Action=>Plugin>
-
-è <Version History=>History>
-è <Future Plans=>ToDo>
-#Endtable
-#Indent
-#Line
-#Align Left
-If you have any comments about Locate, or would like to report any bugs that you find, you can email me at the address below.
-
-Updates to Locate and more programs for RISC OS computers can be found on my website at <http://www.stevefryatt.org.uk/software/=>#url>.
-
-#Align Centre
-© Stephen Fryatt, 2001 (<steve@stevefryatt.org.uk=>#url mailto:steve@stevefryatt.org.uk>)
-Filetype Menu code provided by Harriet Bazley
-
-A plain text version of this manual is available <here=>*Filer_Run wibble>.
-#Align Left
-</literal>
+<define name="version" value="">
+<define name="date" value="" length=30 align="right">
 
 
 
@@ -55,23 +11,6 @@ ManTools - Application manual creation tools                     Version $$versi
 
 (C) Stephen Fryatt, 2002                       $$date$$
 =============================================================================
-</literal>
-
-
-
-
-
-<literal mode="HTML">
-<html>
-<head>
-<title>Locate</title>
-</head>
-
-<body>
-<h1 align="center">Locate</h1>
-<p align="center"><b>Flexible file search for RISC OS</b> - &copy; Stephen Fryatt, 2001<br>
-Version $$version$$ ($$date$$)</p>
-
 </literal>
 
 
@@ -273,86 +212,3 @@ Updates and Contacting Me
   email: steve@stevefryatt.org.uk
 </literal>
 
-
-
-
-<literal mode="Strong" file="!Configure">
-# Configure file for StrongHelp
-# Lines starting with "# " are comments (Note the space)
-# Lines starting with "#Commands" and "#End" are *not* comments.
-
-#Commands
-
-# f0  = Sassoon.Primary           14   Bold  1  Italic  2  Both  3
-# f1  = Sassoon.Primary.Bold      14   Bold  1  Italic  2  Both  3
-# f2  = Homerton.Medium.Oblique   14   Bold  1  Italic  2  Both  3
-# f3  = Homerton.Bold.Oblique     14   Bold  1  Italic  2  Both  3
-
-# The Body font
-
-f0  = Trinity.Medium          14   Bold  1  Italic  2  Both  3
-f1  = Trinity.Bold            14   Bold  1  Italic  2  Both  3
-f2  = Trinity.Medium.Italic   14   Bold  1  Italic  2  Both  3
-f3  = Trinity.Bold.Italic     14   Bold  1  Italic  2  Both  3
-f4  = Trinity.Medium          10
-
-# The Headline fonts
-
-f10 = Homerton.Bold           16
-f11 = Homerton.Bold.Oblique   14
-f12 = Trinity.Bold            14
-f13 = Trinity.Bold.Italic     12
-f14 = Trinity.Medium          10
-f15 = Trinity.Medium.Italic   8
-
-# The fonts used for fCode
-
-f20 = Corpus.Medium           14   Bold 21  Italic 22  Both 23
-f21 = Corpus.Bold             14   Bold 21  Italic 22  Both 23
-f22 = Corpus.Medium.Oblique   14   Bold 21  Italic 22  Both 23
-f23 = Corpus.Bold.Oblique     14   Bold 21  Italic 22  Both 23
-
-# Fonts 24 to 31 are reserved for the manuals themselves.
-
-# The styles..
-
-fStd       = f0
-fLink      = f_
-fStrong    = f*
-fEmphasis  = f/
-fUnderline = f_
-fCode      = f20
-fCite      = f/
-
-fH1        = f10
-fH2        = f11
-fH3        = f12
-fH4        = f13
-fH5        = f14
-fH6        = f15
-
-# Set default background and font
-
-#Background rgb 255,255,255
-Background wimp 1
-fStd
-
-#End
-</literal>
-
-
-
-
-<literal mode="HTML">
-
-<hr noshade>
-<h2>Updates and Contacting Me</h2>
-
-<p>If you have any comments about <cite>ManTools</cite>, or would like to report any bugs that you find, you can email me at the address below.</p>
-
-<p>Updates to <cite>ManTools</cite> and more programs for RISC OS computers can be found on my website at <a href="http://www.stevefryatt.org.uk/software/">http://www.stevefryatt.org.uk/software/</a></p>
-
-<p>Stephen Fryatt (email: <a href="mailto:steve@stevefryatt.org.uk">steve@stevefryatt.org.uk</a>)</p>
-</body>
-</html>
-</literal>
