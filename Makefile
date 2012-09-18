@@ -77,7 +77,7 @@ MENUGEN := $(SFBIN)/menugen
 
 # Build Flags
 
-ZIPFLAGS := -x "*/.svn/*" -r -9
+ZIPFLAGS := -x "*/.svn/*" -r -, -9
 BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS := -d
@@ -91,7 +91,8 @@ OUTDIR := build
 
 # Set up the named target files.
 
-README := ReadMe
+README := ReadMe,fff
+EXECUTABLES := textman.pl,102 strongman.pl,102 htmlman.pl,102 ddfman.pl,102
 
 
 # Set up the source files.
@@ -118,6 +119,7 @@ $(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
 release: clean all
 	$(RM) ../$(ZIPFILE)
 	(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(README))
+	(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(EXECUTABLES))
 	$(RM) ../$(SRCZIPFILE)
 	$(ZIP) $(ZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR)
 	$(ZIP) $(ZIPFLAGS) ../$(SRCZIPFILE) $(MANUAL)
