@@ -28,6 +28,12 @@
 
 use strict;
 
+use constant LIST_NONE		=> 0;
+use constant LIST_BULLET	=> 1;
+use constant LIST_NUMERIC	=> 2;
+use constant LIST_UPPER		=> 3;
+use constant LIST_LOWER		=> 4;
+
 # The output type for literals in the file.
 
 my $mode="Text";
@@ -43,7 +49,7 @@ my @indent = (2);
 my @line_spacing = (1);
 my @line_wrapping = (1);
 my @list_value = (0);
-my @list_type = (0);
+my @list_type = (LIST_NONE);
 
 # Set the entities that we recognise.  NB: this list must contain them in a plain text form.
 
@@ -161,24 +167,24 @@ while (defined(my $line = <INPUT>)) {
 
 			if (defined ($params{'type'})) {
 				if ($params{'type'} eq 'num') {
-					push(@list_type, 2);
+					push(@list_type, LIST_NUMERIC);
 					push(@list_value, 1);
 					push(@indent, $indent[-1] + 4);
 				} elsif ($params{'type'} eq 'upper') {
-					push(@list_type, 3);
+					push(@list_type, LIST_UPPER);
 					push(@list_value, 1);
 					push(@indent, $indent[-1] + 4);
 				} elsif ($params{'type'} eq 'lower') {
-					push(@list_type, 4);
+					push(@list_type, LIST_LOWER);
 					push(@list_value, 1);
 					push(@indent, $indent[-1] + 4);
 				} else {
-					push(@list_type, 1);
+					push(@list_type, LIST_BULLET);
 					push(@list_value, 0);
 					push(@indent, $indent[-1] + 4);
 				}
 			} else {
-				push(@list_type, 1);
+				push(@list_type, LIST_BULLET);
 				push(@list_value, 0);
 				push(@indent, $indent[-1] + 2);
 			}
@@ -256,15 +262,15 @@ sub output_line
 	my $current_line = "";
 
 	if ($line =~ /^<li>/) {
-		if ($list_type != 0) {
-			if ($list_type == 1) {
+		if ($list_type != LIST_NONE) {
+			if ($list_type == LIST_BULLET) {
 				$current_line = " " x ($indent-2)."* ";
-			} elsif ($list_type == 2) {
+			} elsif ($list_type == LIST_NUMERIC) {
 				$current_line = " " x ($indent-4).sprintf ("%2d. ", $$list_value++);
 				$first = 1; # Don't double-space the trailing dot...
-			} elsif ($list_type == 3) {
+			} elsif ($list_type == LIST_UPPER) {
 				$current_line = " " x ($indent-4).sprintf ("%2c) ", 64+$$list_value++);
-			} elsif ($list_type == 4) {
+			} elsif ($list_type == LIST_LOWER) {
 				$current_line = " " x ($indent-4).sprintf ("%2c) ", 96+$$list_value++);
 			}
 		} else {
