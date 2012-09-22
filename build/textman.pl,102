@@ -50,7 +50,7 @@ my %defs = ("title", "");
 
 my @indent = (2);
 my @line_spacing = (1);
-my @line_wrapping = (1);
+my @line_wrapping = (TRUE);
 my @list_value = (0);
 my @list_type = (LIST_NONE);
 
@@ -147,7 +147,7 @@ while (defined(my $line = <INPUT>)) {
 		} elsif ($params{'tag_name'} eq 'codeblock') {
 			push(@indent, $indent[-1] + 2);
 			push(@line_spacing, 0);
-			push(@line_wrapping, 0);
+			push(@line_wrapping, FALSE);
 			$all_lines = 1;
 		} elsif ($params{'tag_name'} eq '/codeblock') {
 			pop(@indent);
@@ -301,7 +301,7 @@ sub output_line
 		$line =~ /( +)/;
 		$word = $`;
 
-		if ($wrapping != 0) {
+		if ($wrapping == TRUE) {
 			$space = ' ';
 		} else {
 			$space = $next_space;
@@ -310,7 +310,7 @@ sub output_line
 
 		$line = $';
 
-		if ($wrapping != 0 && $space eq ' ' && $current_line =~ /\.$/ && $word =~ /^[A-Z]/ && !$first) {
+		if ($wrapping == TRUE && $space eq ' ' && $current_line =~ /\.$/ && $word =~ /^[A-Z]/ && !$first) {
 			$space = '  '; # Double-space after '.' if the next letter is upper-case.
 		}
 
