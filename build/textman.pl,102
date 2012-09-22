@@ -28,6 +28,9 @@
 
 use strict;
 
+use constant TRUE		=> 1;
+use constant FALSE		=> 0;
+
 use constant LIST_NONE		=> 0;
 use constant LIST_BULLET	=> 1;
 use constant LIST_NUMERIC	=> 2;
@@ -230,7 +233,7 @@ sub output_line
 {
 	my ($line, $indent, $spacing, $wrapping, $list_type, $list_value) = @_;
 
-	my $first = 0;
+	my $first = FALSE;
 
 	$line =~ s/<cite>(.*?)<\/cite>/$1/g;		# Citation - no effect
 	$line =~ s/<code>(.*?)<\/code>/"$1"/g;		# Inline code - enclose in ""
@@ -268,7 +271,7 @@ sub output_line
 				$current_line = " " x ($indent-2)."* ";
 			} elsif ($list_type == LIST_NUMERIC) {
 				$current_line = " " x ($indent-4).sprintf ("%2d. ", $$list_value++);
-				$first = 1; # Don't double-space the trailing dot...
+				$first = TRUE; # Don't double-space the trailing dot...
 			} elsif ($list_type == LIST_UPPER) {
 				$current_line = " " x ($indent-4).sprintf ("%2c) ", 64 + $$list_value++);
 			} elsif ($list_type == LIST_LOWER) {
@@ -318,7 +321,7 @@ sub output_line
 			$current_line = (' ' x $indent).$word;
 		}
 
-		$first = 0;
+		$first = FALSE;
 	}
 
 	$line = $new_line.$current_line;
