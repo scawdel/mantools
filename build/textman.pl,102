@@ -26,35 +26,43 @@
 #
 # Usage: TextMan -I<infile> -O<outfile> [-D<var>=<val> ...]
 
+use strict;
 
 # The output type for literals in the file.
 
-$mode="Text";
+my $mode="Text";
 
 # Formatting variables.
 
-set_new_indent(2);
-set_new_spacing(1);
-set_new_wrapping(1);
-set_new_list_value(0, 0);
-$all_lines = 0;
-$box = 0;
+my $all_lines = 0;
+my $box = 0;
 
-%defs = ("title", "");
+my %defs = ("title", "");
+
+my @indent = (2);
+my @line_spacing = (1);
+my @line_wrapping = (1);
+my @list_value = (0);
+my @list_type = (0);
 
 # Set the entities that we recognise.  NB: this list must contain them in a plain text form.
 
-%entities = (
+my %entities = (
 	"lt",	"<",
 	"gt",	">",
 	"quot",	"\"",
 	"amp",	"\e"	# & goes to ESC, then is converted back to &
 );
 
+# Process the command line arguments.
+
+my $infile = undef;
+my $outfile = undef;
+
 if (scalar(@ARGV) > 2) {
 	# Too many arguments, so assume the new format.
 
-	foreach $arg (@ARGV) {
+	foreach my $arg (@ARGV) {
 		if ($arg =~ /^-I(.+)/) {
 			$infile = $1;
 		} elsif ($arg =~ /^-O(.+)/) {
@@ -71,6 +79,10 @@ if (scalar(@ARGV) > 2) {
 	$outfile = $ARGV[1];
 }
 
+if (!defined($infile) || !defined($outfile)) {
+	die "Missing input or output filename parameters.\n";
+}
+
 # Open the input and output files -- there is only one output file used.
 
 open(INPUT, $infile) || die "Can't open input file $infile: $!\n";
@@ -78,16 +90,18 @@ open(OUTPUT, ">".$outfile) || die "Can't open output file $outfile: $!\n";
 
 # Read the lines in one at a time and process them.
 
-while (defined($line = <INPUT>)) {
+while (defined(my $line = <INPUT>)) {
 	chomp($line);
 
 	if ($line =~ /^\s*<([^<>]*)>\s*$/) {
-		%params = parse_tag($1);
+		my %params = parse_tag($1);
 
 		if ($params{'tag_name'} eq 'define') {
 			# If it's already defined, then either we've defined it twice in the file,
 			# or the file definition has been overridden by a command line definition.
 			# In the latter case, we use the definition here to set field size and justification.
+
+			my $defn = "";
 
 			if (defined($defs{$params{'name'}})) {
 				$defn = $defs{$params{'name'}};
@@ -108,6 +122,8 @@ while (defined($line = <INPUT>)) {
 			print OUTPUT "\n\n".$params{'title'}."\n";
 			print OUTPUT "-" x length($params{'title'}) . "\n\n";
 		} elsif ($params{'tag_name'} eq 'literal') {
+			my $literal_line;
+
 			while (defined($literal_line = <INPUT>) && $literal_line !~ /^<\/literal>$/) {
 				if (uc($params{'mode'}) eq uc($mode)) {
 					while ($literal_line =~ /\$\$([a-z]+?)\$\$/) {
@@ -120,68 +136,74 @@ while (defined($line = <INPUT>)) {
 			print OUTPUT "\n  ".$params{'title'}."\n";
 			print OUTPUT "  " . "-" x length ($params{'title'}) . "\n\n";
 		} elsif ($params{'tag_name'} eq 'codeblock') {
-			set_new_indent($indent + 2);
-			set_new_spacing(0);
-			set_new_wrapping(0);
+			push(@indent, $indent[-1] + 2);
+			push(@line_spacing, 0);
+			push(@line_wrapping, 0);
 			$all_lines = 1;
 		} elsif ($params{'tag_name'} eq '/codeblock') {
-			restore_indent();
-			restore_spacing();
-			restore_wrapping();
+			pop(@indent);
+			pop(@line_spacing);
+			pop(@line_wrapping);
 			print OUTPUT "\n";
 			$all_lines = 0;
 		} elsif ($params{'tag_name'} eq 'box') {
-			set_new_indent($indent + 2);
+			push(@indent, $indent[-1] + 2);
 			$box = 1;
 		} elsif ($params{'tag_name'} eq '/box') {
-			restore_indent();
+			pop(@indent);
 			$box = 0;
 		} elsif ($params{'tag_name'} eq 'list') {
 			if (defined($params{'spacing'}) && $params{'spacing'} == 1) {
-				set_new_spacing(1);
+				push(@line_spacing, 1);
 			} else {
-				set_new_spacing(0);
+				push(@line_spacing, 0);
 			}
 
 			if (defined ($params{'type'})) {
 				if ($params{'type'} eq 'num') {
-					set_new_list_value(1, 2);
-					set_new_indent($indent + 4);
+					push(@list_type, 2);
+					push(@list_value, 1);
+					push(@indent, $indent[-1] + 4);
 				} elsif ($params{'type'} eq 'upper') {
-					set_new_list_value(1, 3);
-					set_new_indent($indent + 4);
+					push(@list_type, 3);
+					push(@list_value, 1);
+					push(@indent, $indent[-1] + 4);
 				} elsif ($params{'type'} eq 'lower') {
-					set_new_list_value(1, 4);
-					set_new_indent($indent + 4);
+					push(@list_type, 4);
+					push(@list_value, 1);
+					push(@indent, $indent[-1] + 4);
 				} else {
-					set_new_list_value(0, 1);
-					set_new_indent($indent + 2);
+					push(@list_type, 1);
+					push(@list_value, 0);
+					push(@indent, $indent[-1] + 4);
 				}
 			} else {
-				set_new_list_value(0, 1);
-				set_new_indent($indent + 2);
+				push(@list_type, 1);
+				push(@list_value, 0);
+				push(@indent, $indent[-1] + 2);
 			}
 		} elsif ($params{'tag_name'} eq '/list') {
-			if ($spacing == 0) {
+			if ($line_spacing[-1] == 0) {
 				print OUTPUT "\n";
 			}
 
-			restore_spacing();
-			restore_indent();
-			restore_list_value();
+			pop(@indent);
+			pop(@line_spacing);
+			pop(@list_type);
+			pop(@list_value);
 		} elsif ($params{'tag_name'} eq 'definition') {
-			output_line(OUTPUT, $params{'target'}, $indent, $spacing);
-			set_new_indent($indent + 2);
+			print OUTPUT output_line($params{'target'}, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
+			push(@indent, $indent[-1] + 2);
 		} elsif ($params{'tag_name'} eq '/definition') {
-			restore_indent();
+			pop(@indent);
 		} elsif ($params{'tag_name'} eq 'comdef') {
-			output_line(OUTPUT, $params{'target'}." ".$params{'params'}, $indent, $spacing);
-			set_new_indent($indent + 2);
+			print OUTPUT output_line($params{'target'}." ".$params{'params'}, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
+			push(@indent, $indent[-1] + 2);
 		} elsif ($params{'tag_name'} eq '/comdef') {
-			restore_indent();
+			pop(@indent);
 		}
 	} elsif ($line !~ /^\s*$/  || $all_lines) {
-		output_line(OUTPUT, $line, $indent, $spacing);
+		print OUTPUT output_line($line, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
 	}
 }
 
@@ -190,14 +212,18 @@ while (defined($line = <INPUT>)) {
 # Process a line of text from the file, parsing any in-line commands and formatting it for the
 # current file type, before writing it to the output.
 #
-# Param: $output		The file handle of the output file.
 # Param: $line			The line of text to be written.
 # Param: $indent		The current indent value.
 # Param: $spacing		The current line spacing value.
+# Param: $wrapping		1 to wrap lines; 0 to leave unchanged.
+# Param: $list_type		The current list type.
+# Param: $list_value		Reference to the current list value.
 
 sub output_line
 {
-	my ($output, $line, $indent, $spacing) = @_;
+	my ($line, $indent, $spacing, $wrapping, $list_type, $list_value) = @_;
+
+	my $first = 0;
 
 	$line =~ s/<cite>(.*?)<\/cite>/$1/g;		# Citation - no effect
 	$line =~ s/<code>(.*?)<\/code>/"$1"/g;		# Inline code - enclose in ""
@@ -227,19 +253,19 @@ sub output_line
 
 	# Indent the first line, using a bullet or number if necessary.
 
-	$first = 0;
+	my $current_line = "";
 
 	if ($line =~ /^<li>/) {
 		if ($list_type != 0) {
 			if ($list_type == 1) {
 				$current_line = " " x ($indent-2)."* ";
 			} elsif ($list_type == 2) {
-				$current_line = " " x ($indent-4).sprintf ("%2d. ", $list_value++);
+				$current_line = " " x ($indent-4).sprintf ("%2d. ", $$list_value++);
 				$first = 1; # Don't double-space the trailing dot...
 			} elsif ($list_type == 3) {
-				$current_line = " " x ($indent-4).sprintf ("%2c) ", 64+$list_value++);
+				$current_line = " " x ($indent-4).sprintf ("%2c) ", 64+$$list_value++);
 			} elsif ($list_type == 4) {
-				$current_line = " " x ($indent-4).sprintf ("%2c) ", 96+$list_value++);
+				$current_line = " " x ($indent-4).sprintf ("%2c) ", 96+$$list_value++);
 			}
 		} else {
 			$current_line = " " x ($indent);
@@ -253,8 +279,12 @@ sub output_line
 	# Perform the linewrap on the string, indenting as required.
 
 	$line .= " ";
-	$new_line = "";
-	$next_space = " ";
+
+	my $word = "";
+	my $space = "";
+
+	my $new_line = "";
+	my $next_space = " ";
 	chop($current_line); # Assumes that the last character of indent is space, replaced by one below.
 
 	while ($line ne "") {
@@ -292,108 +322,7 @@ sub output_line
 	$line =~ s/\s*$//;
 	$line .= "\n"x$spacing;
 
-	print $output "$line\n";
-}
-
-
-# -------------------------------------------------------------------------------------------------
-# Set new list details, pushing the old ones onto the stack so that they can be retrieved later.
-#
-# List Types are:	1 = Bullet.
-#			2 = Decimal numbers.
-#			3 = Upper Case letters.
-#			4 = Lower Case letters.
-#
-# Param: $value			The new list item number.
-# Param: $type			The new list type.
-
-sub set_new_list_value
-{
-	my ($value, $type) = @_;
-
-	push(@list_vals, $list_value);
-	$list_value = $value;
-	push(@list_types, $list_type);
-	$list_type = $type;
-}
-
-
-# -------------------------------------------------------------------------------------------------
-# Restore the previous list type from the stack.
-
-sub restore_list_value
-{
-	$list_value = pop(@list_vals);
-	$list_type = pop(@list_types);
-}
-
-
-# -------------------------------------------------------------------------------------------------
-# Set a new line indent, pushing the old value onto the stack so that it can be retrieved later.
-#
-# Param: $new			The required new line indent.
-
-sub set_new_indent
-{
-	my ($new) = @_;
-
-	push(@indents, $indent);
-	$indent = $new;
-}
-
-
-# -------------------------------------------------------------------------------------------------
-# Restore the previous line indent from the stack.
-
-sub restore_indent
-{
-	$indent = pop(@indents);
-}
-
-
-# -------------------------------------------------------------------------------------------------
-# Set a new line spacing, pushing the old value onto the stack so that it can be retrieved later.
-#
-# Param: $new			The required new line spacing.
-
-sub set_new_spacing
-{
-	my ($new) = @_;
-
-	push(@spacings, $spacing);
-	$spacing = $new;
-}
-
-
-# -------------------------------------------------------------------------------------------------
-# Restore the previous line spacing from the stack.
-
-sub restore_spacing
-{
-	$spacing = pop(@spacings);
-}
-
-
-# -------------------------------------------------------------------------------------------------
-# Set a new wrap status, pushing the old value onto the stack so that it can be retrieved later.
-#
-# Param: $new			The required wrap status (1 = Wrap; 0 = No Wrap).
-
-sub set_new_wrapping
-{
-	my ($new) = @_;
-
-	push(@wrappings, $wrapping);
-	$wrapping = $new;
-}
-
-
-# -------------------------------------------------------------------------------------------------
-# Restore the previous line wrapping from the stack.
-
-sub restore_wrapping
-{
-	$wrapping = pop(@wrappings);
+	return $line."\n";
 }
 
 
