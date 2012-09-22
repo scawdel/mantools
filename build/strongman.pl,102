@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #
 # Copyright 2002-2012, Stephen Fryatt
 #
