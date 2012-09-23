@@ -248,7 +248,7 @@ sub output_line
 		} else {
 			$line =~ s/^<li>\s*//;
 		}
-	} elsif ($list_type != 0) {
+	} elsif ($list_type != LIST_NONE) {
 		$line = "{tab}".$line;
 	}
 
