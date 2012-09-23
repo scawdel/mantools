@@ -92,6 +92,7 @@ LICENCE := Licence,fff
 
 README := ReadMe,fff
 EXECUTABLES := textman.pl,102 strongman.pl,102 htmlman.pl,102 ddfman.pl,102
+SUFFIX := .pl,102
 
 
 # Set up the source files.
@@ -127,6 +128,13 @@ release: clean all
 backup:
 	$(RM) ../$(BUZIPFILE)
 	$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
+
+
+# Install the finished version in the GCCSDK, ready for use.
+
+install: clean all
+	for f in $(EXECUTABLES); do $(CP) $(OUTDIR)/$$f $(SFBIN)/$${f%$(SUFFIX)}; done
+#	$(CP) -r $(OUTDIR)/$(EXECUTABLES) $(SFBIN)
 
 
 # Clean targets
