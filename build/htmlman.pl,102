@@ -145,11 +145,12 @@ while (defined(my $line = <INPUT>)) {
 # current file type.
 #
 # Param: $line			The line of text to be written.
+# Param: $preformatted		TRUE if the line is within <pre> tags; else FALSE.
 # Return: 			The formatted line.
 
 sub output_line
 {
-	my ($line, $output_all_lines) = @_;
+	my ($line, $preformatted) = @_;
 
 	# <cite>, <code>, <em> and <strong> just get left as-is.
 
@@ -169,32 +170,27 @@ sub output_line
 		$line = "$`<a href=\"#$1\">$2</a>$'";
 	}
 
-	# Entities don't need converting, either!
+	# If the line isn't preformatted, then enclose it in <p> tags.
 
-  # Perform the linewrap on the string, indenting as required.
-
-#  $line .= "\n";
-#  $line =~ s/(.{0,72})[\s]+/"$1\n"." "x$indent/eg;
-
-	if (!$output_all_lines) {
+	if (!$preformatted) {
 		$line = "<p>".$line."</p>";
 	}
 
-	# Bullet the start of the line if necessary
+	# If the start of the line is bulledted, swap the <li> and the <p>
+	# tags around.
 
 	if ($line =~ /^<p><li>/) {
 		$line =~ s/^<p><li>\s*/"<li><p>"/e;
-		#$line =~ s/<\/p>$/<\/li>/;
 	}
 
-	# Remove any trailing whitespace from the line and then add in new
-	# lines for the required linespacing.
+	# Remove any trailing whitespace from the line
 
 	$line =~ s/\s*$//;
-	# $line .= "\n" x $spacing;
 
-	if (!$output_all_lines) {
-		print OUTPUT "\n";
+	# If the line isn't in a preformatted block, add some whitespace before it.
+
+	if (!$preformatted) {
+		$line = "\n".$line;
 	}
 
 	return $line."\n";
