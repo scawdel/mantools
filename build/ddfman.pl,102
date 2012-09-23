@@ -28,6 +28,9 @@
 
 use strict;
 
+use constant TRUE		=> 1;
+use constant FALSE		=> 0;
+
 use constant LIST_NONE		=> 0;
 use constant LIST_BULLET	=> 1;
 use constant LIST_NUMERIC	=> 2;
@@ -40,7 +43,7 @@ my $mode="DDF";
 
 # Formatting variables.
 
-my $all_lines = 0;
+my $output_all_lines = FALSE;
 
 my %defs = ("title", "");
 
@@ -130,10 +133,10 @@ while (defined(my $line = <INPUT>)) {
 			print OUTPUT "{\"Sub Heading\" on}".$params{'title'}."{\"Sub Heading\" off}\n";
 		} elsif ($params{'tag_name'} eq 'codeblock') {
 			print OUTPUT "{\"Code Block\" on}";
-			$all_lines = 1;
+			$output_all_lines = TRUE;
 		} elsif ($params{'tag_name'} eq '/codeblock') {
 			print OUTPUT "{\"Code Block\" off}";
-			$all_lines = 0;
+			$output_all_lines = FALSE;
 		} elsif ($params{'tag_name'} eq 'box') {
 			print OUTPUT "{\"Box\" on}";
 		} elsif ($params{'tag_name'} eq '/box') {
@@ -182,7 +185,7 @@ while (defined(my $line = <INPUT>)) {
 		} elsif ($params{'tag_name'} eq '/definition') {
 			print OUTPUT "\"Definition Body\" off}";
 		}
-	} elsif ($line !~ /^\s*$/  || $all_lines) {
+	} elsif ($line !~ /^\s*$/  || $output_all_lines) {
 		print OUTPUT output_line($line, $indent[-1], $line_spacing[-1], $list_type[-1], \$list_value[-1]);
 	}
 }

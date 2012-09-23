@@ -43,7 +43,7 @@ my $mode="Text";
 
 # Formatting variables.
 
-my $all_lines = 0;
+my $output_all_lines = FALSE;
 my $box = 0;
 
 my %defs = ("title", "");
@@ -148,13 +148,13 @@ while (defined(my $line = <INPUT>)) {
 			push(@indent, $indent[-1] + 2);
 			push(@line_spacing, 0);
 			push(@line_wrapping, FALSE);
-			$all_lines = 1;
+			$output_all_lines = TRUE;
 		} elsif ($params{'tag_name'} eq '/codeblock') {
 			pop(@indent);
 			pop(@line_spacing);
 			pop(@line_wrapping);
 			print OUTPUT "\n";
-			$all_lines = 0;
+			$output_all_lines = FALSE;
 		} elsif ($params{'tag_name'} eq 'box') {
 			push(@indent, $indent[-1] + 2);
 			$box = 1;
@@ -211,7 +211,7 @@ while (defined(my $line = <INPUT>)) {
 		} elsif ($params{'tag_name'} eq '/comdef') {
 			pop(@indent);
 		}
-	} elsif ($line !~ /^\s*$/  || $all_lines) {
+	} elsif ($line !~ /^\s*$/  || $output_all_lines) {
 		print OUTPUT output_line($line, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
 	}
 }

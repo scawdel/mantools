@@ -28,6 +28,9 @@
 
 use strict;
 
+use constant TRUE		=> 1;
+use constant FALSE		=> 0;
+
 use constant LIST_NONE		=> 0;
 use constant LIST_BULLET	=> 1;
 use constant LIST_NUMERIC	=> 2;
@@ -40,7 +43,7 @@ my $mode="HTML";
 
 # Formatting variables.
 
-my $all_lines = 0;
+my $output_preformatted = FALSE;
 
 my %defs = ("title", "");
 
@@ -114,10 +117,10 @@ while (defined(my $line = <INPUT>)) {
 			print OUTPUT "\n<h3>".$params{'title'}."</h3>\n";
 		} elsif ($params{'tag_name'} eq 'codeblock') {
 			print OUTPUT "\n<blockquote><pre>\n";
-			$all_lines = 1;
+			$output_preformatted = TRUE;
 		} elsif ($params{'tag_name'} eq '/codeblock'){
 			print OUTPUT "</blockquote></pre>\n";
-			$all_lines = 0;
+			$output_preformatted = FALSE;
 		} elsif ($params{'tag_name'} eq 'box') {
 			print OUTPUT "<blockquote>\n";
 		} elsif ($params{'tag_name'} eq '/box') {
@@ -131,8 +134,8 @@ while (defined(my $line = <INPUT>)) {
 		} elsif ($params{'tag_name'} eq '/definition') {
 			print OUTPUT "</dd></dl>\n";
 		}
-	} elsif ($line !~ /^\s*$/  || $all_lines) {
-		print OUTPUT output_line($line);
+	} elsif ($line !~ /^\s*$/  || $output_preformatted) {
+		print OUTPUT output_line($line, $output_preformatted);
 	}
 }
 
@@ -146,7 +149,7 @@ while (defined(my $line = <INPUT>)) {
 
 sub output_line
 {
-	my ($line) = @_;
+	my ($line, $output_all_lines) = @_;
 
 	# <cite>, <code>, <em> and <strong> just get left as-is.
 
@@ -173,7 +176,7 @@ sub output_line
 #  $line .= "\n";
 #  $line =~ s/(.{0,72})[\s]+/"$1\n"." "x$indent/eg;
 
-	if (!$all_lines) {
+	if (!$output_all_lines) {
 		$line = "<p>".$line."</p>";
 	}
 
@@ -190,7 +193,7 @@ sub output_line
 	$line =~ s/\s*$//;
 	# $line .= "\n" x $spacing;
 
-	if (!$all_lines) {
+	if (!$output_all_lines) {
 		print OUTPUT "\n";
 	}
 
