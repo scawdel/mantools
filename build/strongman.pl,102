@@ -109,7 +109,7 @@ if (!(-d $outfolder)) {
 	mkdir $outfolder, 0755;
 }
 
-# Scan through the file to find all of the chapters, the return the pointer to
+# Scan through the file to find all of the chapters, then return the pointer to
 # the start of the file again.
 
 my @chapters;
