@@ -44,7 +44,6 @@ my $mode="Text";
 # Formatting variables.
 
 my $output_all_lines = FALSE;
-my $box = 0;
 
 my %defs = ("title", "");
 
@@ -157,10 +156,8 @@ while (defined(my $line = <INPUT>)) {
 			$output_all_lines = FALSE;
 		} elsif ($params{'tag_name'} eq 'box') {
 			push(@indent, $indent[-1] + 2);
-			$box = 1;
 		} elsif ($params{'tag_name'} eq '/box') {
 			pop(@indent);
-			$box = 0;
 		} elsif ($params{'tag_name'} eq 'list') {
 			if (defined($params{'spacing'}) && $params{'spacing'} == 1) {
 				push(@line_spacing, 1);
