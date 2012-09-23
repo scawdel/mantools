@@ -232,11 +232,6 @@ sub output_line
 
 	$line =~ s/\e/&/g; # Restore the &s after the entities have gone.
 
-	# Perform the linewrap on the string, indenting as required.
-
-#  $line .= "\n";
-#  $line =~ s/(.{0,72})[\s]+/"$1\n"." "x$indent/eg;
-
 	# Bullet the start of the line if necessary
 
 	if ($line =~ /^<li>/) {
