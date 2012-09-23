@@ -130,11 +130,12 @@ backup:
 	$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
 
 
-# Install the finished version in the GCCSDK, ready for use.
+# Install the finished version in the GCCSDK, ready for use.  It's not a striaghtforward
+# copy, as we need to strip the file extensions that are in build/ for the benefit
+# of the RISC OS target.
 
 install: clean all
 	for f in $(EXECUTABLES); do $(CP) $(OUTDIR)/$$f $(SFBIN)/$${f%$(SUFFIX)}; done
-#	$(CP) -r $(OUTDIR)/$(EXECUTABLES) $(SFBIN)
 
 
 # Clean targets
