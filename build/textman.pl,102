@@ -330,7 +330,7 @@ sub output_line
 	# for the required linespacing.
 
 	$line =~ s/\s*$//;
-	$line .= "\n"x$spacing;
+	$line .= "\n" x $spacing;
 
 	return $line."\n";
 }
