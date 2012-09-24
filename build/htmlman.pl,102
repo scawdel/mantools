@@ -148,6 +148,20 @@ while (defined(my $line = <INPUT>)) {
 			print OUTPUT "\n<dl><dt><b>".$params{'target'}."</b></dt>\n<dd>\n";
 		} elsif ($params{'tag_name'} eq '/definition') {
 			print OUTPUT "</dd></dl>\n";
+		} elsif ($params{'tag_name'} eq 'comdef') {
+			my $command = "";
+			if (defined($params{'target'})) {
+				$command = "\n<dl><dt><b>".$params{'target'}."</b>";
+			} else {
+				$command = "\n<dl><dt><b>Command</b>";
+			}
+			if (defined($params{'params'})) {
+				$command .= " <i>".$params{'params'}."</i>";
+			}
+			$command .= "</dt>\n<dd>\n";
+			print OUTPUT $command;
+		} elsif ($params{'tag_name'} eq '/comdef') {
+			print OUTPUT "</dd></dl>\n";
 		}
 	} elsif ($line !~ /^\s*$/  || $output_preformatted) {
 		print OUTPUT output_line($line, $output_preformatted);
