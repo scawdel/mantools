@@ -198,7 +198,7 @@ while (defined(my $line = <INPUT>)) {
 			}
 			print OUTPUT "{\"Definition Head\" on}".$params{'target'}."{\"Definition Head\" off}\n{\"Definition Body\" on}";
 		} elsif ($params{'tag_name'} eq '/definition') {
-			print OUTPUT "\"Definition Body\" off}";
+			print OUTPUT "{\"Definition Body\" off}";
 		}
 	} elsif ($line !~ /^\s*$/  || $output_all_lines) {
 		print OUTPUT output_line($line, $indent[-1], $line_spacing[-1], $list_type[-1], \$list_value[-1]);
