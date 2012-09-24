@@ -76,6 +76,7 @@ MENUGEN := $(SFBIN)/menugen
 # Build Flags
 
 ZIPFLAGS := -x "*/.svn/*" -r -, -9
+SRCZIPFLAGS := -x "*/.svn/*" -r -9
 BUZIPFLAGS := -x "*/.svn/*" -r -9
 BINDHELPFLAGS := -f -r -v
 MENUGENFLAGS := -d
@@ -120,7 +121,7 @@ release: clean all
 	$(RM) ../$(ZIPFILE)
 	(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(README) $(LICENCE) $(EXECUTABLES))
 	$(RM) ../$(SRCZIPFILE)
-	$(ZIP) $(ZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR) $(MANUAL) Makefile
+	$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR) $(MANUAL) Makefile
 
 
 # Build a backup Zip file
