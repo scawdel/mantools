@@ -109,28 +109,38 @@ while (defined(my $line = <INPUT>)) {
 			# or the file definition has been overridden by a command line definition.
 			# In the latter case, we use the definition here to set field size and justification.
 
-			my $defn = "";
+			if (defined($params{'name'}) && defined($params{'value'})) {
+				my $defn = "";
 
-			if (defined($defs{$params{'name'}})) {
-				$defn = $defs{$params{'name'}};
-			} else {
-				$defn = $params{'value'};
-			}
-
-			if (defined($params{'length'})) {
-				if (uc($params{'align'}) eq "LEFT") {
-					$defn = sprintf "%-$params{'length'}s", $defn;
-				} elsif (uc($params{'align'}) eq "RIGHT") {
-					$defn = sprintf "%+$params{'length'}s", $defn;
+				if (defined($defs{$params{'name'}})) {
+					$defn = $defs{$params{'name'}};
+				} else {
+					$defn = $params{'value'};
 				}
+
+				if (defined($params{'length'})) {
+					if (uc($params{'align'}) eq "LEFT") {
+						$defn = sprintf "%-$params{'length'}s", $defn;
+					} elsif (uc($params{'align'}) eq "RIGHT") {
+						$defn = sprintf "%+$params{'length'}s", $defn;
+					}
+				}
+
+				$defs{$params{'name'}} = $defn;
+			}
+		} elsif ($params{'tag_name'} eq 'chapter') {
+			if (!defined($params{'title'})) {
+				$params{'title'} = "Chapter";
 			}
 
-			$defs{$params{'name'}} = $defn;
-		} elsif ($params{'tag_name'} eq 'chapter') {
 			print OUTPUT "\n\n".$params{'title'}."\n";
 			print OUTPUT "-" x length($params{'title'}) . "\n\n";
 		} elsif ($params{'tag_name'} eq 'literal') {
 			my $literal_line;
+
+			if (!defined($params{'mode'})) {
+				$params{'mode'} = "";
+			}
 
 			while (defined($literal_line = <INPUT>) && $literal_line !~ /^<\/literal>$/) {
 				if (uc($params{'mode'}) eq uc($mode)) {
@@ -141,6 +151,10 @@ while (defined(my $line = <INPUT>)) {
 				}
 			}
 		} elsif ($params{'tag_name'} eq 'subhead') {
+			if (!defined($params{'title'})) {
+				$params{'title'} = "Subheading";
+			}
+
 			print OUTPUT "\n  ".$params{'title'}."\n";
 			print OUTPUT "  " . "-" x length ($params{'title'}) . "\n\n";
 		} elsif ($params{'tag_name'} eq 'codeblock') {
@@ -198,12 +212,24 @@ while (defined(my $line = <INPUT>)) {
 			pop(@list_type);
 			pop(@list_value);
 		} elsif ($params{'tag_name'} eq 'definition') {
+			if (!defined($params{'target'})) {
+				$params{'target'} = "Definition";
+			}
 			print OUTPUT output_line($params{'target'}, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
 			push(@indent, $indent[-1] + 2);
 		} elsif ($params{'tag_name'} eq '/definition') {
 			pop(@indent);
 		} elsif ($params{'tag_name'} eq 'comdef') {
-			print OUTPUT output_line($params{'target'}." ".$params{'params'}, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
+			my $command = "";
+			if (defined($params{'target'})) {
+				$command = $params{'target'};
+			} else {
+				$command = "Command";
+			}
+			if (defined($params{'params'})) {
+				$command .= " ".$params{'params'};
+			}
+			print OUTPUT output_line($command, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
 			push(@indent, $indent[-1] + 2);
 		} elsif ($params{'tag_name'} eq '/comdef') {
 			pop(@indent);

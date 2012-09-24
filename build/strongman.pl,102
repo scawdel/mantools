@@ -144,7 +144,7 @@ while (defined(my $line = <INPUT>)) {
 			# If it's already defined, then either we've defined it twice in the file,
 			# or the file definition has been overridden by a command line definition.
 
-			if (!defined($defs{$params{'name'}})) {
+			if (defined($params{'name'}) && defined($params{'value'}) && !defined($defs{$params{'name'}})) {
 				$defs{$params{'name'}} = $params{'value'};
 			}
 		} elsif ($params{'tag_name'} eq 'chapter') {
@@ -152,6 +152,15 @@ while (defined(my $line = <INPUT>)) {
 			# Tidy up from anything that was happening before -- end a bullet list
 			# if one was being written, write the end-of-chapter blurb and close
 			# any file that is open.
+
+			if (!defined($params{'title'})) {
+				$params{'title'} = "Chapter";
+			}
+
+			if (!defined($params{'file'})) {
+				$params{'file'} = "Chapter " . $current_chapter;
+			}
+
 
 			if ($chapter_open == TRUE) {
 				pop(@indent);
@@ -200,6 +209,10 @@ while (defined(my $line = <INPUT>)) {
 			# one was being written, write the end-of-chapter blurb and close any file
 			# that is open.
 
+			if (!defined($params{'mode'})) {
+				$params{'mode'} = "";
+			}
+
 			if ($chapter_open == TRUE) {
 				pop(@indent);
 				print OUTPUT newline(TRUE, "#Indent\n");
@@ -233,6 +246,10 @@ while (defined(my $line = <INPUT>)) {
 				}
 			}
 		} elsif ($params{'tag_name'} eq 'subhead') {
+			if (!defined($params{'title'})) {
+				$params{'title'} = "Subheading";
+			}
+
 			$line = substr($line, 1, 77);
 			print OUTPUT newline(FALSE, "{fh2:".$params{'title'}."}\n\n");
 		} elsif ($params{'tag_name'} eq 'codeblock') {
@@ -313,6 +330,10 @@ while (defined(my $line = <INPUT>)) {
 				print OUTPUT newline(FALSE, "\n" x $line_spacing[-1]);
 			}
 		} elsif ($params{'tag_name'} eq 'definition') {
+			if (!defined($params{'target'})) {
+				$params{'target'} = "Definition";
+			}
+
 			print OUTPUT newline(FALSE, output_line("{f*:".$params{'target'}."}", $line_spacing[-1], $list_type[-1], \$list_value[-1]));
 			push(@line_spacing, -1);
 			push(@indent, $indent[-1] + 2);
@@ -325,7 +346,16 @@ while (defined(my $line = <INPUT>)) {
 				print OUTPUT newline(FALSE, "\n" x $line_spacing[-1]);
 			}
 		} elsif ($params{'tag_name'} eq 'comdef') {
-			print OUTPUT newline(FALSE, output_line("{f*:".$params{'target'}."} {f*/:".$params{'params'}."}", $line_spacing[-1], $list_type[-1], \$list_value[-1]));
+			my $command = "";
+			if (defined($params{'target'})) {
+				$command = "{f*:".$params{'target'}."}";
+			} else {
+				$command = "{f*:Command}";
+			}
+			if (defined($params{'params'})) {
+				$command .= " {f*/:".$params{'params'}."}";
+			}
+			print OUTPUT newline(FALSE, output_line($command, $line_spacing[-1], $list_type[-1], \$list_value[-1]));
 			push(@line_spacing, -1);
 			push(@indent, $indent[-1] + 2);
 			print OUTPUT newline(TRUE, "#Indent $indent[-1]");

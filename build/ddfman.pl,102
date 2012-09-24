@@ -111,14 +111,22 @@ while (defined(my $line = <INPUT>)) {
 			# If it's already defined, then either we've defined it twice in the file,
 			# or the file definition has been overridden by a command line definition.
 
-			if (!defined($defs{$params{'name'}})) {
+			if (defined($params{'name'}) && defined($params{'value'}) && !defined($defs{$params{'name'}})) {
 				$defs{$params{'name'}} = $params{'value'};
 			}
 		} elsif ($params{'tag_name'} eq 'chapter') {
+			if (!defined($params{'title'})) {
+				$params{'title'} = "Chapter";
+			}
+
 			print OUTPUT "{nextframe}\n";
 			print OUTPUT "{\"Main Heading\" on}".$params{'title'}."{\"Main Heading\" off}\n";
 		} elsif ($params{'tag_name'} eq 'literal') {
 			my $literal_line = "";
+
+			if (!defined($params{'mode'})) {
+				$params{'mode'} = "";
+			}
 
 			while (defined ($literal_line = <INPUT>) && $literal_line !~ /^<\/literal>$/) {
 				if (uc($params{'mode'}) eq uc($mode)) {
@@ -130,6 +138,10 @@ while (defined(my $line = <INPUT>)) {
 				}
 			}
 		} elsif ($params{'tag_name'} eq 'subhead') {
+			if (!defined($params{'title'})) {
+				$params{'title'} = "Subheading";
+			}
+
 			print OUTPUT "{\"Sub Heading\" on}".$params{'title'}."{\"Sub Heading\" off}\n";
 		} elsif ($params{'tag_name'} eq 'codeblock') {
 			print OUTPUT "{\"Code Block\" on}";
@@ -181,6 +193,9 @@ while (defined(my $line = <INPUT>)) {
 			pop(@list_type);
 			pop(@list_value);
 		} elsif ($params{'tag_name'} eq 'definition') {
+			if (!defined($params{'target'})) {
+				$params{'target'} = "Definition";
+			}
 			print OUTPUT "{\"Definition Head\" on}".$params{'target'}."{\"Definition Head\" off}\n{\"Definition Body\" on}";
 		} elsif ($params{'tag_name'} eq '/definition') {
 			print OUTPUT "\"Definition Body\" off}";
