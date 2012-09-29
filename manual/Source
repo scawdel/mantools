@@ -21,29 +21,27 @@ ManTools - Application manual creation tools                     Version $$versi
 
 <cite>ManTools</cite> are licensed under the EUPL, Version&nbsp;1.1 only (the "Licence"); you may not use this work except in compliance with the Licence.
 
-You may obtain a copy of the Licence at http://joinup.ec.europa.eu/software/page/eupl
+You may obtain a copy of the Licence at <link ref="#url http://joinup.ec.europa.eu/software/page/eupl">http://joinup.ec.europa.eu/software/page/eupl</link>
 
 Unless required by applicable law or agreed to in writing, software distributed under the Licence is distributed on an &quot;<strong>as is</strong>&quot; basis, <strong>without warranties or conditions of any kind</strong>, either express or implied.
 
 See the Licence for the specific language governing permissions and limitations under the Licence.
 
-The source for <cite>ManTools</cite> can be found alongside this binary download, at http://www.stevefryatt.org.uk/software/
+The source for <cite>ManTools</cite> can be found alongside this binary download, at <link ref="#url http://www.stevefryatt.org.uk/software">http://www.stevefryatt.org.uk/software</link>
 
 </chapter>
+
 
 
 
 
 <chapter title="Introduction" file="Introduction">
 
-<cite>ManTools</cite> are a set of Perl scripts intended for generating StrongHelp, HTML and plain text help files from a single source file.  The intention was to make it easier to supply a plain text version of the StrongHelp manual supplied with the software I wrote.
+<cite>ManTools</cite> are a set of Perl scripts intended for generating StrongHelp, HTML, DDF and plain text help files from a single source file.  The intention is to make it easier to supply a both plain text and formatted versions of software manuals.
 
-The manuals for use with <cite>ManTools</cite> are marked up in an HTML or XML like way, using tags enclosed in angle brackets (like &lt;this&gt;).  Unlike HTML, the makup tags have a strong bias towards producing documentation for RISC&nbsp;OS applications.
+The manuals for use with <cite>ManTools</cite> are marked up in an HTML or XML like way, using tags enclosed in angle brackets (like &lt;this&gt;).  Unlike HTML, the markup tags have a strong bias towards producing documentation for RISC&nbsp;OS applications. They are also far from rigorous in their structure.
 
 </chapter>
-
-
-
 
 
 
@@ -51,17 +49,31 @@ The manuals for use with <cite>ManTools</cite> are marked up in an HTML or XML l
 
 <chapter title="Markup language" file="Markup">
 
-The markup tags used are similar to HTML, but the whole structure is simplified a bit.  All tags are enclosed in angle brackets (like &lt;this&gt;) and reserved characters are inserted using the standard entities starting with ampersand.
+The markup tags used by <cite>ManTools</cite> are similar to HTML, but the whole structure is simplified a bit.  All tags are enclosed in angle brackets (like &lt;this&gt;) and reserved characters are inserted using the standard entities starting with ampersand.
 
-Unlike in HTML, paragraphs are not enclosed in <code>&lt;p&gt; ... &lt;/p&gt;</code> tags.  Instead, each paragraph must be on one line in the file, with one or more newlines at the end.  Using a text editor that supports soft-wrap (ie. not <cite>Edit</cite>) will help to make this easier.
+Unlike in HTML, paragraphs are not enclosed in <code>&lt;p&gt; ... &lt;/p&gt;</code> tags.  Instead, each paragraph must be on one line in the file, with one or more newlines at the end. Using a text editor that supports soft-wrap (ie. not <cite>Edit</cite>) will help to make this easier.
 
 
-<subhead title="Block tags">
+<subhead title="General syntax">
 
-Block tags must appear on a line of their own.  Some of them have a closing tag, although this is not universal.  Those that are closed apply to one or more whole paragraphs that are located between the tags.
+<cite>ManTools</cite> defines three distinct types of object in its files: block tags, inline tags and character entities. Tags can be either open or closed. Inline tags and entities are found within paragraphs, which are continuous lines of text separated by one or more newlines.
 
-<definition target="&lt;document ...&gt;">
-The <code>&lt;document ...&gt;</code> tag appears at the top of a document and supplies details about that document.  It is not closed.
+Block tags must appear on a line of their own, and define something about the structure of the document. Some of them have a closing tag, although this is not universal. Those that are closed apply to one or more whole paragraphs that are located between the tags.
+
+Unlike block tags, inline tags appear within a line of text.  The apply formatting to individual words or characters, as opposed to entire paragraphs. Entities also appear within a line of text, and represent characters that can not easily be included in the markup.
+
+</chapter>
+
+
+
+<chapter title="Document structure" file="Structure">
+
+A source file consists of one or more sections or chapters, which are put together to form a complete manual. How these are interpreted will depend on the format being produced: some conversions (such as plain text) concatenate all of the sections into a single file, while others (such as StrongHelp) put each section into its own file.
+
+Every source file must start with the &lt;document&nbsp;...&gt; tag, which gives details of the manual being created.
+
+<definition target="&lt;document&nbsp;...&gt;">
+The <code>&lt;document ...&gt;</code> tag appears at the top of a document, at the block level. It supplies details about that document, and is not closed.
 
 The defined attributes are:
 
@@ -69,6 +81,18 @@ The defined attributes are:
 <li><code>title</code>: the title of the document.  Used to prefix chapter titles in <cite>StrongHelp</cite> title-bars.
 </list>
 </definition>
+
+The &lt;document&nbsp;...&gt; tag is followed by any variable definitions which are required by the rest of the manual.
+
+
+
+
+
+
+<subhead title="Block tags">
+
+Block tags must appear on a line of their own.  Some of them have a closing tag, although this is not universal.  Those that are closed apply to one or more whole paragraphs that are located between the tags.
+
 
 
 <definition target="&lt;literal ...&gt; ... &lt;/literal&gt;">
@@ -154,7 +178,7 @@ The <code>&lt;link ...&gt; ... &lt;/link&gt;</code> tag pair enclose a hyperlink
 The defined attributes are:
 
 <list>
-<li><code>ref</code>: the <code>file</code> attribute from a <code>&lt;chapter ...&gt;</code> tag pair elsewhere in the document, defining the location to jump to.
+<li><code>ref</code>: the <code>file</code> attribute from a <code>&lt;chapter ...&gt;</code> tag pair elsewhere in the document, defining the location to jump to. Alternatively, the reference can start with a <cite>StrongHelp</cite> format <code>#url </code> (with a trailing space) to indicate that what follows is a URI.
 </list>
 </definition>
 
