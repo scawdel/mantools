@@ -19,7 +19,7 @@ ManTools - Application manual creation tools                     Version $$versi
 
 <chapter title="License" file="License">
 
-<cite>ManTools</cite> are licensed under the EUPL, Version 1.1 only (the "Licence"); you may not use this work except in compliance with the Licence.
+<cite>ManTools</cite> are licensed under the EUPL, Version&nbsp;1.1 only (the "Licence"); you may not use this work except in compliance with the Licence.
 
 You may obtain a copy of the Licence at http://joinup.ec.europa.eu/software/page/eupl
 
@@ -38,7 +38,7 @@ The source for <cite>ManTools</cite> can be found alongside this binary download
 
 <cite>ManTools</cite> are a set of Perl scripts intended for generating StrongHelp, HTML and plain text help files from a single source file.  The intention was to make it easier to supply a plain text version of the StrongHelp manual supplied with the software I wrote.
 
-The manuals for use with <cite>ManTools</cite> are marked up in an HTML or XML like way, using tags enclosed in angle brackets (like &lt;this&gt;).  Unlike HTML, the makup tags have a strong bias towards producing documentation for RISC OS applications.
+The manuals for use with <cite>ManTools</cite> are marked up in an HTML or XML like way, using tags enclosed in angle brackets (like &lt;this&gt;).  Unlike HTML, the makup tags have a strong bias towards producing documentation for RISC&nbsp;OS applications.
 
 </chapter>
 
