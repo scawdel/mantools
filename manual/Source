@@ -66,7 +66,8 @@ Unlike block tags, inline tags appear within a line of text.  The apply formatti
 
 
 
-<chapter title="Document structure" file="Structure">
+
+<chapter title="Document Structure" file="Structure">
 
 A source file consists of one or more sections or chapters, which are put together to form a complete manual. How these are interpreted will depend on the format being produced: some conversions (such as plain text) concatenate all of the sections into a single file, while others (such as StrongHelp) put each section into its own file.
 
