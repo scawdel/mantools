@@ -59,6 +59,7 @@ my %entities = (
 	"lt",	"<",
 	"gt",	">",
 	"quot",	"\"",
+	"nbsp",	"\xa0",
 	"amp",	"\e"	# & goes to ESC, then is converted back to &
 );
 
@@ -348,6 +349,8 @@ sub output_line
 	}
 
 	$line = $new_line.$current_line;
+
+	$line =~ s/\xa0/ /g; # Replace hard spaces with spaces once linewrap is done.
 
 	# Remove any trailing whitespace from the line and then add in newlines
 	# for the required linespacing.

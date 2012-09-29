@@ -58,6 +58,7 @@ my %entities = (
 	"lt",	"<",
 	"gt",	">",
 	"quot",	"\"",
+	"nbsp",	"{\\160}",
 	"amp",	"\e"	# & goes to ESC, then is converted back to &
 );
 
