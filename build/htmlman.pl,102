@@ -195,6 +195,10 @@ sub output_line
 
 	# Convert all the hyperlinks into HTML format.
 
+	while ($line =~ /<link ref="#url (.*?)">(.*?)<\/link>/) {
+		$line = "$`<a href=\"$1\">$2</a>$'";
+	}
+
 	while ($line =~ /<link ref="(.*?)">(.*?)<\/link>/) {
 		$line = "$`<a href=\"#$1\">$2</a>$'";
 	}
