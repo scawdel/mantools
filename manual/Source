@@ -54,13 +54,15 @@ The markup tags used by <cite>ManTools</cite> are similar to HTML, but the whole
 Unlike in HTML, paragraphs are not enclosed in <code>&lt;p&gt; ... &lt;/p&gt;</code> tags.  Instead, each paragraph must be on one line in the file, with one or more newlines at the end. Using a text editor that supports soft-wrap (ie. not <cite>Edit</cite>) will help to make this easier.
 
 
-<subhead title="General syntax">
+<subhead title="General syntax and structure">
 
 <cite>ManTools</cite> defines three distinct types of object in its files: block tags, inline tags and character entities. Tags can be either open or closed. Inline tags and entities are found within paragraphs, which are continuous lines of text separated by one or more newlines.
 
 Block tags must appear on a line of their own, and define something about the structure of the document. Some of them have a closing tag, although this is not universal. Those that are closed apply to one or more whole paragraphs that are located between the tags.
 
 Unlike block tags, inline tags appear within a line of text.  The apply formatting to individual words or characters, as opposed to entire paragraphs. Entities also appear within a line of text, and represent characters that can not easily be included in the markup.
+
+A document starts with block tags defining details of the document itself and setting constants to be used elsewhere. Following on from these, the source contains a sequence of chapters and literal blocks. Chapters are written out to all outputs, laid out appropriately to take into account the capabilities of the target format. Literal blocks are written out unchanged, if the target format matches that to which the block is attached.
 
 </chapter>
 
@@ -85,19 +87,25 @@ The defined attributes are:
 
 The &lt;document&nbsp;...&gt; tag is followed by any variable definitions which are required by the rest of the manual.
 
+<definition target="&lt;define&nbsp;...&gt;">
+The <code>&lt;define ...&gt;</code> tag appears at the top of a document, at the block level; it is not closed. Each tag defines a single constant which can be used later on in literal blocks document.
 
+The defined attributes are:
 
+<list>
+<li><code>name</code>: the name of the constant.
+<li><code>value</code>: the value to be given to the constant.
+<li><code>length</code>: the length of the constant's field, in characters.
+<li><code>align</code>: the alignment of the constant's contents in the field.
+</list>
 
+The <code>length</code> and <code>align</code> attributes are optional, and will be ignored if they do not make sense in the context of a specific output format.
+</definition>
 
-
-<subhead title="Block tags">
-
-Block tags must appear on a line of their own.  Some of them have a closing tag, although this is not universal.  Those that are closed apply to one or more whole paragraphs that are located between the tags.
-
-
+Following on from the document and constant definitions are a series of blocks of content which form the help text. Literal blocks are passed straight to the output for their specific format (and ignored for all other formats); chapters go into all outputs, but are formatted according to the requirements of the specific output before they go.
 
 <definition target="&lt;literal ...&gt; ... &lt;/literal&gt;">
-The <code>&lt;literal ...&gt; ... &lt;/literal&gt;</code> tag pair enclose a block of text that will be written to a specific type of output file.  The block is written with no translation apart from the insertion of literals.
+The <code>&lt;literal ...&gt; ... &lt;/literal&gt;</code> tag pair enclose a block of text that will be written to a specific type of output file.  The block is written with no translation apart from the insertion of variables.
 
 The defined attributes are:
 
@@ -107,6 +115,14 @@ The defined attributes are:
 </list>
 </definition>
 
+The following output modes are currently defined, and are case-insensitive:
+
+<list>
+<li>Text
+<li>Strong
+<li>HTML
+<li>DDF
+</list>
 
 <definition target="&lt;chapter ...&gt; ... &lt;/chapter&gt;">
 The <code>&lt;chapter ...&gt; ... &lt;/chapter&gt;</code> tag pair enclose a block of text that forms a chapter in a document.  Depending upon the type of manual being produced, this will either form a section of text with a main heading above it, or it will be a separate page.
@@ -118,6 +134,17 @@ The defined attributes are:
 <li><code>file</code>: the file name or link attribute.  This is used to reference the chapter in the <code>&lt;link ...&gt;</code> tag and will be used as a filename if multiple output files are produced.
 </list>
 </definition>
+
+
+
+
+<subhead title="Block tags">
+
+Block tags must appear on a line of their own.  Some of them have a closing tag, although this is not universal.  Those that are closed apply to one or more whole paragraphs that are located between the tags.
+
+
+
+
 
 
 <definition target="&lt;subhead ...&gt;">
