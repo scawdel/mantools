@@ -37,9 +37,34 @@ The source for <cite>ManTools</cite> can be found alongside this binary download
 
 <chapter title="Introduction" file="Introduction">
 
-<cite>ManTools</cite> are a set of Perl scripts intended for generating StrongHelp, HTML, DDF and plain text help files from a single source file.  The intention is to make it easier to supply a both plain text and formatted versions of software manuals.
+<cite>ManTools</cite> are a set of Perl scripts intended for generating StrongHelp, HTML, DDF and plain text help files from a single source file.  The intention is to make it easier to supply a both plain text and formatted versions of software manuals.  The markup options available have a strong bias towards creating documentation for ROSC&nbsp;OS software.
 
-The manuals for use with <cite>ManTools</cite> are marked up in an HTML or XML like way, using tags enclosed in angle brackets (like &lt;this&gt;).  Unlike HTML, the markup tags have a strong bias towards producing documentation for RISC&nbsp;OS applications. They are also far from rigorous in their structure.
+To use the scripts natively on RISC&nbsp;OS, a copy of Perl&nbsp;5 will be required. At the time of writing, a copy can be found at <link ref="#url http://www.cp15.org/perl/">http://www.cp15.org/perl/</link>. The scripts are command-line based, and should be installed in a library or called by their full pathname.
+
+</chapter>
+
+
+
+
+
+<chapter title="Command Line Use" file="Use">
+
+The scripts that comprise <cite>ManTools</cite> are <cite>TextMan</cite>, <cite>StrongMan</cite>, <cite>HTMLMan</cite> and <cite>DDFMan</cite>. Each script takes the same parameters on the command line, and in their simplest form should be called with the syntax:
+
+<command>textman &lt;infile&gt; &lt;outfile&gt;</command>
+
+This two-parameter format is provided for backwards compatibility. If constants are required to be defined by the called (such as in a Makefile, then then an alternative syntax is provided:
+
+<command>textman -I&lt;infile&gt; -O&lt;outfile&gt; -D&lt;constant&gt;=&lt;value&gt;</command>
+
+This allows constants to be defined externally from the script (maybe for things such as creation date or build version). If multiple constants are required, more than one <code>-D</code> parameter can be supplied to the script.
+
+
+<subhead title="Output types">
+
+<cite>ManTools</cite> manuals are formed from a sequence of blocks and chapters: how these are used by a script depends upon its output format. The text, HTML and DDF scripts generate a single file in the target format which contains all of the applicable blocks in sequence. The StrongHelp script creates a folder with the name of the output file, and saves each part of the source into a separate file within it; a separate tool (such as BindHelp or StrongHelp itself) will be required to turn these files into a finished manual.
+
+How individual output formats handle aspects of the markup will depend on their capabilities. Individual scripts are free to ignore tags and entities which they can not process sensibly: for example, while <code>&lt;file&gt;...&lt;/file&gt;</code> might create italic text in an HTML document, it will have no visible effect in a text manual.
 
 </chapter>
 
@@ -49,20 +74,32 @@ The manuals for use with <cite>ManTools</cite> are marked up in an HTML or XML l
 
 <chapter title="Markup language" file="Markup">
 
-The markup tags used by <cite>ManTools</cite> are similar to HTML, but the whole structure is simplified a bit.  All tags are enclosed in angle brackets (like &lt;this&gt;) and reserved characters are inserted using the standard entities starting with ampersand.
+The markup tags used by <cite>ManTools</cite> are similar to HTML, but the whole structure is simplified and with a less rigorous structure.  All tags are enclosed in angle brackets (like &lt;this&gt;) and reserved characters are inserted using the standard entities starting with ampersand. Rrecognised entities are:
+
+<list>
+<li>&amp;lt; - &lt;
+<li>&amp;gt; - &gt;
+<li>&amp;amp; - &amp;
+<li>&amp;quot; - &quot;
+<li>&amp;nbsp; - non-breaking space
+</list>
 
 Unlike in HTML, paragraphs are not enclosed in <code>&lt;p&gt; ... &lt;/p&gt;</code> tags.  Instead, each paragraph must be on one line in the file, with one or more newlines at the end. Using a text editor that supports soft-wrap (ie. not <cite>Edit</cite>) will help to make this easier.
 
+Two types of tag are defined: inline tags and block tags.  Inline tags appear within the text of a paragraph &lt;em&gt;like this&lt;/em&gt; and apply formatting to all or part of that line. They can not span across more than one paragraph.  Block tags, on the other hand, appear on lines of their own
 
-<subhead title="General syntax and structure">
+<codeblock>
+&lt;codeblock&gt;
+like this
+&lt;/codeblock&gt;
+</codeblock>
 
-<cite>ManTools</cite> defines three distinct types of object in its files: block tags, inline tags and character entities. Tags can be either open or closed. Inline tags and entities are found within paragraphs, which are continuous lines of text separated by one or more newlines.
+and provide structure to the document. Their contents can include one or more paragraphs, as required; they may also affect the formatting of the output.
 
-Block tags must appear on a line of their own, and define something about the structure of the document. Some of them have a closing tag, although this is not universal. Those that are closed apply to one or more whole paragraphs that are located between the tags.
 
-Unlike block tags, inline tags appear within a line of text.  The apply formatting to individual words or characters, as opposed to entire paragraphs. Entities also appear within a line of text, and represent characters that can not easily be included in the markup.
+<subhead title="General document structure">
 
-A document starts with block tags defining details of the document itself and setting constants to be used elsewhere. Following on from these, the source contains a sequence of chapters and literal blocks. Chapters are written out to all outputs, laid out appropriately to take into account the capabilities of the target format. Literal blocks are written out unchanged, if the target format matches that to which the block is attached.
+A <cite>ManTools</cite> document starts with block tags defining details of the document itself and setting constants to be used elsewhere. Following on from these, the source contains a sequence of chapters and literal blocks. Chapters are written out to all outputs, laid out appropriately to take into account the capabilities of the target format. Literal blocks are written out unchanged, if the target format matches that to which the block is attached.
 
 </chapter>
 
