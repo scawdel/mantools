@@ -74,14 +74,14 @@ How individual output formats handle aspects of the markup will depend on their 
 
 <chapter title="Markup language" file="Markup">
 
-The markup tags used by <cite>ManTools</cite> are similar to HTML, but the whole structure is simplified and with a less rigorous structure.  All tags are enclosed in angle brackets (like &lt;this&gt;) and reserved characters are inserted using the standard entities starting with ampersand. Rrecognised entities are:
+The markup tags used by <cite>ManTools</cite> are similar to HTML, but the whole structure is simplified and with a less rigorous structure.  All tags are enclosed in angle brackets (like &lt;this&gt;) and reserved characters are inserted using the standard entities starting with ampersand. Recognised entities are:
 
 <list>
-<li>&amp;lt; - &lt;
-<li>&amp;gt; - &gt;
-<li>&amp;amp; - &amp;
-<li>&amp;quot; - &quot;
-<li>&amp;nbsp; - non-breaking space
+<li><code>&amp;lt;</code> - &lt;
+<li><code>&amp;gt;</code> - &gt;
+<li><code>&amp;amp;</code> - &amp;
+<li><code>&amp;quot;</code> - &quot;
+<li><code>&amp;nbsp;</code> - non-breaking space
 </list>
 
 Unlike in HTML, paragraphs are not enclosed in <code>&lt;p&gt; ... &lt;/p&gt;</code> tags.  Instead, each paragraph must be on one line in the file, with one or more newlines at the end. Using a text editor that supports soft-wrap (ie. not <cite>Edit</cite>) will help to make this easier.
@@ -101,19 +101,15 @@ and provide structure to the document. Their contents can include one or more pa
 
 A <cite>ManTools</cite> document starts with block tags defining details of the document itself and setting constants to be used elsewhere. Following on from these, the source contains a sequence of chapters and literal blocks. Chapters are written out to all outputs, laid out appropriately to take into account the capabilities of the target format. Literal blocks are written out unchanged, if the target format matches that to which the block is attached.
 
-</chapter>
+The intention is that chapters are used to hold the majority of the manual's content, while literal blocks can be used to set up areas such as the start and end of the document where more precise control of the output is required. In the case of multi-file formats like StrongHelp, literal blocks can also be used to hold additional files such as configuration data.
 
 
-
-
-<chapter title="Document Structure" file="Structure">
-
-A source file consists of one or more sections or chapters, which are put together to form a complete manual. How these are interpreted will depend on the format being produced: some conversions (such as plain text) concatenate all of the sections into a single file, while others (such as StrongHelp) put each section into its own file.
+<subhead title="Document header and constants">
 
 Every source file must start with the &lt;document&nbsp;...&gt; tag, which gives details of the manual being created.
 
 <definition target="&lt;document&nbsp;...&gt;">
-The <code>&lt;document ...&gt;</code> tag appears at the top of a document, at the block level. It supplies details about that document, and is not closed.
+The <code>&lt;document&nbsp;...&gt;</code> tag appears at the top of a document, at the block level. It supplies details about that document, and is not closed.
 
 The defined attributes are:
 
@@ -122,10 +118,10 @@ The defined attributes are:
 </list>
 </definition>
 
-The &lt;document&nbsp;...&gt; tag is followed by any variable definitions which are required by the rest of the manual.
+The &lt;document&nbsp;...&gt; tag is followed by any constant definitions which are required by the rest of the manual.
 
 <definition target="&lt;define&nbsp;...&gt;">
-The <code>&lt;define ...&gt;</code> tag appears at the top of a document, at the block level; it is not closed. Each tag defines a single constant which can be used later on in literal blocks document.
+The <code>&lt;define&nbsp;...&gt;</code> tag appears at the top of a document, at the block level; it is not closed. Each tag defines a single constant which can be used later on in literal blocks document.
 
 The defined attributes are:
 
@@ -139,10 +135,50 @@ The defined attributes are:
 The <code>length</code> and <code>align</code> attributes are optional, and will be ignored if they do not make sense in the context of a specific output format.
 </definition>
 
-Following on from the document and constant definitions are a series of blocks of content which form the help text. Literal blocks are passed straight to the output for their specific format (and ignored for all other formats); chapters go into all outputs, but are formatted according to the requirements of the specific output before they go.
+Constants can be defined entirely within the file, or they can be defined on the command line when a script is called. To give an example, a manual could start with the lines
 
-<definition target="&lt;literal ...&gt; ... &lt;/literal&gt;">
-The <code>&lt;literal ...&gt; ... &lt;/literal&gt;</code> tag pair enclose a block of text that will be written to a specific type of output file.  The block is written with no translation apart from the insertion of variables.
+<codeblock>
+&lt;document title=&quot;Example&quot;&gt;
+&lt;define name=&quot;foo&quot; value=&quot;bar&quot;&gt;
+</codeblock>
+
+to set the constant <code>foo</code> to the value &quot;bar&quot;. Within a literal block this constant can then be referenced by enclosing the constant name within double string symbols: <code>$$foo$$</code>. In the example above, <code>This is a $$foo$$ code</code> would result in the text <code>This is a bar code</code> being output.
+
+Alternatively, the variable could have been defined as a command-line parameter to the script:
+
+<command>textman -Iinfile -Ooutfile -Dfoo=bar</code>
+
+When parameters are passed in this way, they override any <code>&lt;define&nbsp;...&gt;</code> tags found in the script file.
+
+The <code>length</code> and <code>align</code> attributes can be used to apply fixed-space formatting where this makes sense in the context of the output format (such as plain text). The <code>length</code> gives a field width: when specified, the constant's value will be truncated to fit (if necessary) or padded out with spaces.  The text can be aligned to the left or right of the field, as shown here:
+
+<codeblock>
+&lt;document title=&quot;Example&quot;&gt;
+&lt;define name=&quot;left&quot; value=&quot;Fred&quot; length=10 align=&quot;left&quot;&gt;
+&lt;define name=&quot;right&quot; value=&quot;Jim&quot; length=10 align=&quot;right&quot;&gt;
+
+&lt;literal mode=&quot;text&quot;&gt;
+This text is $$left$$ aligned.
+This text is $$right$$ aligned.
+&lt;/literal&gt;
+</codeblock>
+
+would result in the output
+
+<codeblock>
+This text is Fred      aligned.
+This text is       Jim aligned.
+</codeblock>
+
+being generated by the text script (which only works when viewed in a fixed-width font).
+
+
+<subhead title="Chapters and literal blocks">
+
+Following on from the document and constant definitions are a series of blocks of content which form the help text. There are two types of content: literal blocks are passed straight to the output for their specific format (and ignored for all other formats); chapters go into all outputs, but are formatted according to the requirements of the specific output before they go.
+
+<definition target="&lt;literal&nbsp;...&gt; ... &lt;/literal&gt;">
+The <code>&lt;literal&nbsp;...&gt; ... &lt;/literal&gt;</code> tag pair enclose a block of text that will be written to a specific type of output file.  The block is written with no translation apart from the insertion of constants as described above. No tags or entities are searched for or processed within a literal block.
 
 The defined attributes are:
 
@@ -155,22 +191,53 @@ The defined attributes are:
 The following output modes are currently defined, and are case-insensitive:
 
 <list>
-<li>Text
-<li>Strong
-<li>HTML
-<li>DDF
+<li><code>Text</code> -- textman
+<li><code>Strong</code> -- strongman
+<li><code>HTML</code> -- htmlman
+<li><code>DDF</code> -- ddfman
 </list>
 
-<definition target="&lt;chapter ...&gt; ... &lt;/chapter&gt;">
-The <code>&lt;chapter ...&gt; ... &lt;/chapter&gt;</code> tag pair enclose a block of text that forms a chapter in a document.  Depending upon the type of manual being produced, this will either form a section of text with a main heading above it, or it will be a separate page.
+If the <code>mode</code> attribute given for a literal matches that of the script being run, then the literal is written to the output; otherwise it is skipped. If the script generates multiple files, then the <code>file</file> attribute will be used for the name of the file.
+
+Chapters, on the other hand, are written to all outputs and can contain markup in the form of tags and entities. The contents is processed in a way that is appropriate to the capabilities of the current output format.
+
+<definition target="&lt;chapter&nbsp;...&gt; ... &lt;/chapter&gt;">
+The <code>&lt;chapter&nbsp;...&gt; ... &lt;/chapter&gt;</code> tag pair enclose a block of text that forms a chapter in a document.  Depending upon the type of manual being produced, this will either form a section of text with a main heading above it, or it will be a separate page.
 
 The defined attributes are:
 
 <list>
 <li><code>title</code>: the title of the chapter as used in the document.
-<li><code>file</code>: the file name or link attribute.  This is used to reference the chapter in the <code>&lt;link ...&gt;</code> tag and will be used as a filename if multiple output files are produced.
+<li><code>file</code>: the file name or link attribute.  This is used to reference the chapter in the <code>&lt;link&nbsp;...&gt;</code> tag and will be used as a filename if multiple output files are produced.
 </list>
 </definition>
+
+Unlike a literal block, a chapter has a <code>title</code> attribute to set the title for the block of text: this is written out in advance with suitable formatting.
+
+As with literal blocks, chapters also have a <code>file</code> attribute to specify a filename for multi-file output formats. However, the value here is also used as a bookmark for the <code>&lt;link&nbsp;...&gt; ... &lt;/link&gt; tag: allowing hyperlinks to be created in a manual when the format (such as StrongHelp or HTML) allows it.
+
+</chapter>
+
+
+
+
+<chapter title="Block Level Tags" file="Blocks">
+
+The tags that can appear within a <code>&lt;chapter&nbsp;...&gt; ... &lt;/chapter&gt;</code> block fall into two groups: block-level and in-line tags. Block-level tags appear on a line of their own, and should be separated by newlines from other tags or content.
+
+The purpose of block-level tags is to apply structure to the chapter contents, and allow the individual scripts to mark it up in a suitable way.
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
