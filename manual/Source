@@ -225,34 +225,15 @@ As with literal blocks, chapters also have a <code>file</code> attribute to spec
 
 The tags that can appear within a <code>&lt;chapter&nbsp;...&gt; ... &lt;/chapter&gt;</code> block fall into two groups: block-level and in-line tags. Block-level tags appear on a line of their own, and should be separated by newlines from other tags or content.
 
-The purpose of block-level tags is to apply structure to the chapter contents, and allow the individual scripts to mark it up in a suitable way.
+The purpose of block-level tags is to apply structure to the chapter contents, and allow the individual scripts to mark it up in a suitable way.  Some tags are 'open' and come without a closing tag: they apply to a single point in the text.  Other tags are 'closed', and affect one or more paragraphs that are enclosed between them.
 
 
+<subhead title="Subheadings">
 
+The <code>&lt;subhead&nbsp;...&gt;</code> tag places a subheading in the text.
 
-
-
-
-
-
-
-
-
-
-
-
-
-<subhead title="Block tags">
-
-Block tags must appear on a line of their own.  Some of them have a closing tag, although this is not universal.  Those that are closed apply to one or more whole paragraphs that are located between the tags.
-
-
-
-
-
-
-<definition target="&lt;subhead ...&gt;">
-The <code>&lt;subhead ...&gt;</code> tag appears in a chapter and inserts a sub heading at that point.  It is not closed.
+<definition target="&lt;subhead&nbsp;...&gt;">
+The <code>&lt;subhead&nbsp;...&gt;</code> tag appears in a chapter and inserts a sub heading at that point.  It is not closed.
 
 The defined attributes are:
 
@@ -262,35 +243,31 @@ The defined attributes are:
 </definition>
 
 
-<definition target="&lt;list&gt; ... &lt;/list&gt;">
-The <code>&lt;list ...&gt; ... &lt;/list&gt;</code> tag pair enclose a bullet-point list.  The paragraphs between the tags are indented as a list and those with <code>&lt;li&gt;</code> at the start are given a bullet point.
+<subhead title="Lists">
+
+Lists can be inserted into the text using the <code>&lt;list&nbsp;...&gt; ... &lt;/list&gt;</code> tag. Lists are effectively a set of specially-formatted paragraphs: indented appropriately, and marked by a bullet or number when they start with an <code>&lt;li&gt;</code> tag.
+
+Lists can be bulleted, or identified by numeric or alphabetic indexes.  They can be nested.
+
+<definition target="&lt;list&nbsp;...&gt; ... &lt;/list&gt;">
+The <code>&lt;list&nbsp;...&gt; ... &lt;/list&gt;</code> tag pair enclose a bullet-point list.  The paragraphs between the tags are indented as a list and those with <code>&lt;li&gt;</code> at the start are given a bullet point.
 
 The defined attributes are:
 
 <list>
 <li><code>type</code>: the type of list.  This can be <code>bullet</code>, <code>num</code>, <code>upper</code> or <code>lower</code>.  The default is bullet.
 
-<li><code>spacing</code>: the line spacing.  This is either <code>0</code> or <code>1</code>; the default is 0.
+<li><code>spacing</code>: the line spacing.  This is either <code>0</code> or <code>1</code> and sets the number of lines between list paragraphs; the default is 0.
 </list>
 </definition>
 
 
-<definition target="&lt;codeblock&gt; ... &lt;/codeblock&gt;">
-The <code>&lt;codeblock ...&gt; ... &lt;/codeblock&gt;</code> tag pair enclose a section of code or literal text.  All lines (including blank ones) are output to the file.  A monospace font and indentation are used if applicable.
+<subhead title="Definitions">
 
-The are no defined attributes.
-</definition>
+The <code>&lt;definition&nbsp;...&gt; ... &lt;/definition&gt;</code> tag allows a definition to be given for a piece of text.  The target for the definition is given by the <code>target</code> attribute, and the definition itself is given by the paragraphs which fall within the tag.
 
-
-<definition target="&lt;box&gt; ... &lt;/box&gt;">
-The <code>&lt;box ...&gt; ... &lt;/box&gt;</code> tag pair enclose a section of text that is to be highligted or stand out from the remaining copy (such as a 'box' in a magazine).
-
-The are no defined attributes.
-</definition>
-
-
-<definition target="&lt;definition ...&gt; ... &lt;/definition&gt;">
-The <code>&lt;definition ...&gt; ... &lt;/definition&gt;</code> tag pair enclose a definition of a piece of text (the target).  This is equivalent to the <code>&lt;dl&gt;&lt;dt&gt;&lt;dd&gt;</code> structure in HTML.
+<definition target="&lt;definition&nbsp;...&gt; ... &lt;/definition&gt;">
+The <code>&lt;definition&nbsp;...&gt; ... &lt;/definition&gt;</code> tag pair enclose a definition of a piece of text (the target).  This is equivalent to the <code>&lt;dl&gt;&lt;dt&gt;&lt;dd&gt;</code> structure in HTML.
 
 The defined attributes are:
 
@@ -300,9 +277,37 @@ The defined attributes are:
 </definition>
 
 
-<subhead title="In-line tags">
+<subhead title="Block formatting">
 
-Unlike block tags, inline tags appear within a line of text.  The apply formatting to individual words or characters, as opposed to entire paragraphs.
+Blocks of text, comprising one or more paragraphs, can have specific formats applied. The <code>&lt;codeblock&nbsp;...&gt; ... &lt;/codeblock&gt;</code> can be used to enclose preformatted text: while intended for quoting blocks of code or text file, it can be used for other similar purposes.
+
+<definition target="&lt;codeblock&gt; ... &lt;/codeblock&gt;">
+The <code>&lt;codeblock&gt; ... &lt;/codeblock&gt;</code> tag pair enclose a section of code or literal text.  All lines (including blank ones) are output to the file.  A monospace font and indentation are used if applicable.
+
+The are no defined attributes.
+</definition>
+
+The <code>&lt;box&gt; ... &lt;/box&gt; tag can be used to highlight a block of text from the surrounding paragraphs.
+
+<definition target="&lt;box&gt; ... &lt;/box&gt;">
+The <code>&lt;box&gt; ... &lt;/box&gt;</code> tag pair enclose a section of text that is to be highlighted or stand out from the remaining copy (such as a 'box' in a magazine).
+
+The are no defined attributes.
+</definition>
+
+</chapter>
+
+
+
+
+<chapter title="In-line tags" file="Inline">
+
+Unlike block-level tags, in-line tags appear within a line of text.  They apply formatting to individual words or characters, as opposed to entire paragraphs.
+
+
+<subhead title="References and hyperlinks">
+
+The <code>&lt;link&nbsp;...&gt; ... &lt;/link&gt;</code> tag can be used to insert hyperlinks in formats that support them. The links can either be to other sections of the manual, or to external URLs.
 
 <definition target="&lt;link ...&gt; ... &lt;/link&gt;">
 The <code>&lt;link ...&gt; ... &lt;/link&gt;</code> tag pair enclose a hyperlink, that will be used in output formats that support these.
@@ -310,12 +315,18 @@ The <code>&lt;link ...&gt; ... &lt;/link&gt;</code> tag pair enclose a hyperlink
 The defined attributes are:
 
 <list>
-<li><code>ref</code>: the <code>file</code> attribute from a <code>&lt;chapter ...&gt;</code> tag pair elsewhere in the document, defining the location to jump to. Alternatively, the reference can start with a <cite>StrongHelp</cite> format <code>#url </code> (with a trailing space) to indicate that what follows is a URI.
+<li><code>ref</code>: the <code>file</code> attribute from a <code>&lt;chapter ...&gt;</code> tag pair elsewhere in the document, defining the location to jump to. Alternatively, the reference can start with a <cite>StrongHelp</cite>-style <code>#url </code> (with a trailing space) to indicate that what follows is a URI.
 </list>
 </definition>
 
-<definition target="Semantic tags">
-There are several semantic tags that can be used to apply meaning to pieces of text.  These are:
+If an output format does not support hyperlinks, then the link tags are just removed during the processing.
+
+
+<subhead title="Semantic tags">
+
+There are several semantic tags that can be used to apply meaning to pieces of text. Which, or even if any, formats are applied will depend on the capabilities of the output format.
+
+The defined semantics are:
 
 <list>
 <li><code>&lt;cite&gt;</code>: indicates a citation.
@@ -338,7 +349,6 @@ There are several semantic tags that can be used to apply meaning to pieces of t
 
 <li><code>&lt;window&gt;</code>: marks a window title.
 </list>
-</definition>
 
 </chapter>
 
