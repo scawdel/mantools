@@ -56,11 +56,12 @@ my @list_type = (LIST_NONE);
 # Set the entities that we recognise.  NB: this list must contain them in a plain text form.
 
 my %entities = (
-	"lt",	"<",
-	"gt",	">",
-	"quot",	"\"",
-	"nbsp",	"\xa0",
-	"amp",	"\e"	# & goes to ESC, then is converted back to &
+	"lt",		"<",
+	"gt",		">",
+	"quot",		"\"",
+	"ndash",	"--",
+	"nbsp",		"\xa0",
+	"amp",		"\e"	# & goes to ESC, then is converted back to &
 );
 
 # Process the command line arguments.

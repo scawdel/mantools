@@ -81,6 +81,7 @@ The markup tags used by <cite>ManTools</cite> are similar to HTML, but the whole
 <li><code>&amp;gt;</code> - &gt;
 <li><code>&amp;amp;</code> - &amp;
 <li><code>&amp;quot;</code> - &quot;
+<li><code>&amp;ndash;</code> - n-dash (&ndash;)
 <li><code>&amp;nbsp;</code> - non-breaking space
 </list>
 
@@ -324,7 +325,7 @@ If an output format does not support hyperlinks, then the link tags are just rem
 
 <subhead title="Semantic tags">
 
-There are several semantic tags that can be used to apply meaning to pieces of text. Which, or even if any, formats are applied will depend on the capabilities of the output format.
+There are several semantic tags that can be used to apply meaning to pieces of text. Which &ndash; or even if any &ndash; formats are applied will depend on the capabilities of the output format.
 
 The defined semantics are:
 

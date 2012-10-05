@@ -59,11 +59,12 @@ my @list_value = 0;
 # that is ready to go into a StrongHelp manual.
 
 my %entities = (
-	"lt",	'\<',
-	"gt",	'\>',
-	"quot",	'"',
-	"nbsp",	"\xa0",
-	"amp",	"\e"	# & goes to ESC, then is converted back to &
+	"lt",		'\<',
+	"gt",		'\>',
+	"quot",		'"',
+	"ndash",	"\x97",
+	"nbsp",		"\xa0",
+	"amp",		"\e"	# & goes to ESC, then is converted back to &
 );
 
 # Process the command line arguments.
