@@ -330,25 +330,31 @@ There are several semantic tags that can be used to apply meaning to pieces of t
 The defined semantics are:
 
 <list>
-<li><code>&lt;cite&gt;</code>: indicates a citation.
+<li><code>&lt;cite&gt; ... &lt;/cite&gt;</code>: indicates a citation.
 
-<li><code>&lt;code&gt;</code>: identifies an inline block of code.
+<li><code>&lt;code&gt; ... &lt;/code&gt;</code>: identifies an inline block of code.
 
-<li><code>&lt;em&gt;</code>: emphasises the text.
+<li><code>&lt;command&gt; ... &lt;/command&gt;</code>: marks a command-line command.
 
-<li><code>&lt;file&gt;</code>: shows a file name or path.
+<li><code>&lt;em&gt; ... &lt;/em&gt;</code>: emphasises the text.
 
-<li><code>&lt;icon&gt;</code>: indicates an icon (button) label.
+<li><code>&lt;entry&gt; ... &lt;/entry&gt;</code>: identifies user-typed text.
 
-<li><code>&lt;key&gt;</code>: indicates a key name.
+<li><code>&lt;file&gt; ... &lt;/file&gt;</code>: shows a file name or path.
 
-<li><code>&lt;menu&gt;</code>: marks a menu entry.
+<li><code>&lt;icon&gt; ... &lt;/icon&gt;</code>: indicates an icon (button) label.
 
-<li><code>&lt;mouse&gt;</code>: indicates a mouse button.
+<li><code>&lt;key&gt; ... &lt;/key&gt;</code>: indicates a key name.
 
-<li><code>&lt;strong&gt;</code>: strongly emphasises the text.
+<li><code>&lt;menu&gt; ... &lt;/menu&gt;</code>: marks a menu entry.
 
-<li><code>&lt;window&gt;</code>: marks a window title.
+<li><code>&lt;mouse&gt; ... &lt;/mouse&gt;</code>: indicates a mouse button.
+
+<li><code>&lt;param&gt; ... &lt;/param&gt;</code>: marks a command-line parameter.
+
+<li><code>&lt;strong&gt; ... &lt;/strong&gt;</code>: strongly emphasises the text.
+
+<li><code>&lt;window&gt; ... &lt;/window&gt;</code>: marks a window title.
 </list>
 
 </chapter>
