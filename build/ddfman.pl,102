@@ -60,6 +60,7 @@ my %entities = (
 	"quot",		"\"",
 	"ndash",	"{\\151}",
 	"nbsp",		"{\\160}",
+	"msep",		"{font Selwyn}{\\213}{font}",
 	"amp",		"\e"	# & goes to ESC, then is converted back to &
 );
 

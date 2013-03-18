@@ -64,6 +64,7 @@ my %entities = (
 	"quot",		'"',
 	"ndash",	"\x97",
 	"nbsp",		"\xa0",
+	"msep",		"{f31:\xd5}",
 	"amp",		"\e"	# & goes to ESC, then is converted back to &
 );
 
@@ -399,7 +400,7 @@ sub output_line
 	$line =~ s/<file>(.*?)<\/file>/{f\/:$1}/g;		# Filename - no effect
 	$line =~ s/<icon>(.*?)<\/icon>/{f*:$1}/g;		# Icon labels - enclose in ''
 	$line =~ s/<key>(.*?)<\/key>/ucfirst $1/eg;		# Key names - initial capital
-	$line =~ s/<menu>(.*?)<\/menu>/{f*:$1}/g;		# Menu entries - enclose in ''
+	$line =~ s/<menu>(.*?)<\/menu>/\{f*\}$1\{f\}/g;		# Menu entries - enclose in ''
 	$line =~ s/<mouse>(.*?)<\/mouse>/ucfirst $1/eg;		# Mouse buttons - initial capital
 	$line =~ s/<param>(.*?)<\/param>/{fcode:$1}/g;		# Parameter - code
 	$line =~ s/<strong>(.*?)<\/strong>/{f*:$1}/g;		# Strong Emphasis - To Upper

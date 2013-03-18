@@ -203,6 +203,12 @@ sub output_line
 		$line = "$`<a href=\"#$1\">$2</a>$'";
 	}
 
+	# Sort out any &msep; entities into something that's valid HTML.
+
+	while ($line =~ /&msep;/) {
+		$line = "$`&rarr;$'";
+	}
+
 	# If the line isn't preformatted, then enclose it in <p> tags.
 
 	if (!$preformatted) {

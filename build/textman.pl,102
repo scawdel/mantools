@@ -61,6 +61,7 @@ my %entities = (
 	"quot",		"\"",
 	"ndash",	"--",
 	"nbsp",		"\xa0",
+	"msep",		"--",
 	"amp",		"\e"	# & goes to ESC, then is converted back to &
 );
 

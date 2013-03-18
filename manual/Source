@@ -77,13 +77,16 @@ How individual output formats handle aspects of the markup will depend on their 
 The markup tags used by <cite>ManTools</cite> are similar to HTML, but the whole structure is simplified and with a less rigorous structure.  All tags are enclosed in angle brackets (like &lt;this&gt;) and reserved characters are inserted using the standard entities starting with ampersand. Recognised entities are:
 
 <list>
-<li><code>&amp;lt;</code> - &lt;
-<li><code>&amp;gt;</code> - &gt;
-<li><code>&amp;amp;</code> - &amp;
-<li><code>&amp;quot;</code> - &quot;
-<li><code>&amp;ndash;</code> - n-dash (&ndash;)
-<li><code>&amp;nbsp;</code> - non-breaking space
+<li><code>&amp;lt;</code> &ndash; &lt;
+<li><code>&amp;gt;</code> &ndash; &gt;
+<li><code>&amp;amp;</code> &ndash; &amp;
+<li><code>&amp;quot;</code> &ndash; &quot;
+<li><code>&amp;ndash;</code> &ndash; n-dash (&ndash;)
+<li><code>&amp;nbsp;</code> &ndash; non-breaking space
+<li><code>&amp;msep;</code> &ndash; menu item separator
 </list>
+
+Note the RISC&nbsp;OS-specific <code>&amp;msep;</code>, which is used to signify the separation between levels of a hierarchical menu.
 
 Unlike in HTML, paragraphs are not enclosed in <code>&lt;p&gt; ... &lt;/p&gt;</code> tags.  Instead, each paragraph must be on one line in the file, with one or more newlines at the end. Using a text editor that supports soft-wrap (ie. not <cite>Edit</cite>) will help to make this easier.
 
