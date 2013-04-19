@@ -53,6 +53,9 @@ my @line_wrapping = (TRUE);
 my @list_value = (0);
 my @list_type = (LIST_NONE);
 
+my $bar_inset = -1;
+my $line_prefix = "";
+
 # Set the entities that we recognise.  NB: this list must contain them in a plain text form.
 
 my %entities = (
@@ -172,9 +175,25 @@ while (defined(my $line = <INPUT>)) {
 			print OUTPUT "\n";
 			$output_all_lines = FALSE;
 		} elsif ($params{'tag_name'} eq 'box') {
+			if ($bar_inset == -1) {
+				$bar_inset = $indent[-1];
+			}
 			push(@indent, $indent[-1] + 2);
+
+			if (defined($params{'type'})) {
+				$indent[-1] = $indent[-1] + 4;
+
+				if ($params{'type'} eq 'info') {
+					$line_prefix = "(i) ";
+				} elsif ($params{'type'} eq 'warning') {
+					$line_prefix = "(!) ";
+				}
+			}
 		} elsif ($params{'tag_name'} eq '/box') {
 			pop(@indent);
+			if ($bar_inset == $indent[-1]) {
+				$bar_inset = -1;
+			}
 		} elsif ($params{'tag_name'} eq 'list') {
 			if (defined($params{'spacing'}) && $params{'spacing'} == 1) {
 				push(@line_spacing, 1);
@@ -218,7 +237,7 @@ while (defined(my $line = <INPUT>)) {
 			if (!defined($params{'target'})) {
 				$params{'target'} = "Definition";
 			}
-			print OUTPUT output_line($params{'target'}, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
+			print OUTPUT output_line($params{'target'}, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1], $bar_inset, "");
 			push(@indent, $indent[-1] + 2);
 		} elsif ($params{'tag_name'} eq '/definition') {
 			pop(@indent);
@@ -232,13 +251,14 @@ while (defined(my $line = <INPUT>)) {
 			if (defined($params{'params'})) {
 				$command .= " ".$params{'params'};
 			}
-			print OUTPUT output_line($command, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
+			print OUTPUT output_line($command, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1], $bar_inset, "");
 			push(@indent, $indent[-1] + 2);
 		} elsif ($params{'tag_name'} eq '/comdef') {
 			pop(@indent);
 		}
 	} elsif ($line !~ /^\s*$/  || $output_all_lines) {
-		print OUTPUT output_line($line, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1]);
+		print OUTPUT output_line($line, $indent[-1], $line_spacing[-1], $line_wrapping[-1], $list_type[-1], \$list_value[-1], $bar_inset, $line_prefix);
+		$line_prefix = "";
 	}
 }
 
@@ -253,11 +273,13 @@ while (defined(my $line = <INPUT>)) {
 # Param: $wrapping		1 to wrap lines; 0 to leave unchanged.
 # Param: $list_type		The current list type.
 # Param: $list_value		Reference to the current list value, which could be updated.
+# Param: $bar			Indent at which to place a vertical bar, or -1
+# Param: $prefix		Prefix to place after the bar on the first line, or ""
 # Return: 			The formatted line.
 
 sub output_line
 {
-	my ($line, $indent, $spacing, $wrapping, $list_type, $list_value) = @_;
+	my ($line, $indent, $spacing, $wrapping, $list_type, $list_value, $bar, $prefix) = @_;
 
 	my $first = FALSE;
 
@@ -312,6 +334,10 @@ sub output_line
 		$current_line = " " x $indent;
 	}
 
+	if ($bar != -1 && $bar <= $indent) {
+		substr($current_line, $bar, 2 + length($prefix)) = '| '.$prefix;
+	}
+
 	# Perform the linewrap on the string, indenting as required.
 
 	$line .= " ";
@@ -345,6 +371,10 @@ sub output_line
 		} else {
 			$new_line .= $current_line."\n";
 			$current_line = (' ' x $indent).$word;
+
+			if ($bar != -1 && $bar <= $indent) {
+				substr($current_line, $bar, 1) = '|';
+			}
 		}
 
 		$first = FALSE;

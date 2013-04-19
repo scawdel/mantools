@@ -9,7 +9,7 @@
 =============================================================================
 ManTools - Application manual creation tools                     Version $$version$$
 
-(C) Stephen Fryatt, 2002-2012                  $$date$$
+(C) Stephen Fryatt, 2002-2013                  $$date$$
 =============================================================================
 </literal>
 
@@ -296,7 +296,11 @@ The <code>&lt;box&gt; ... &lt;/box&gt; tag can be used to highlight a block of t
 <definition target="&lt;box&gt; ... &lt;/box&gt;">
 The <code>&lt;box&gt; ... &lt;/box&gt;</code> tag pair enclose a section of text that is to be highlighted or stand out from the remaining copy (such as a 'box' in a magazine).
 
-The are no defined attributes.
+The defined attributes are:
+
+<list>
+<li><code>type</code>: the type of box to apply: either <code>info</code> or <code>warning</code>. If either are used, then a <code>sprites</code> parameter must be defined which gives the name of a spritefile in the manual containing suitable "info" and "warning" sprites of 32 pixels width.
+</list>
 </definition>
 
 </chapter>

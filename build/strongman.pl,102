@@ -185,6 +185,9 @@ while (defined(my $line = <INPUT>)) {
 			# Output the start of the chapter and set the flags.
 
 			print OUTPUT newline(FALSE, $defs{'title'}.": ".$params{'title'}."\n");
+			if (defined($defs{'sprites'})) {
+				print OUTPUT newline(TRUE, "#SpriteFile ".$defs{'sprites'}."\n");
+			}
 			print OUTPUT newline(FALSE, "{fh1:".$params{'title'}."}\n");
 			print OUTPUT newline(TRUE, "#Line\n");
 			push(@indent, $indent[-1] + 2);
@@ -272,10 +275,21 @@ while (defined(my $line = <INPUT>)) {
 			$output_all_lines = FALSE;
 		} elsif ($params{'tag_name'} eq 'box') {
 			push(@line_spacing, -1);
-			print OUTPUT newline(TRUE, "#F*");
+			if (defined($params{'type'}) && ($params{'type'} eq 'info' || $params{'type'} eq 'warning')) {
+				push(@indent, $indent[-1] + 5);
+				print OUTPUT newline(TRUE, "#Indent $indent[-1]\n");
+				print OUTPUT newline(TRUE, "#Sprite ".($indent[-2]*16).",f ".$params{'type'}."\n");
+				print OUTPUT newline(TRUE, "#F/");
+			} else {
+				push(@indent, $indent[-1]);
+				print OUTPUT newline(TRUE, "#Indent $indent[-1]\n");
+				print OUTPUT newline(TRUE, "#F*");
+			}
 		} elsif ($params{'tag_name'} eq '/box') {
+			pop(@indent);
 			pop(@line_spacing);
 			print OUTPUT newline(TRUE, "#F\n");
+			print OUTPUT newline(TRUE, "#Indent\n");
 
 			if ($line_spacing[-1] > 0) {
 				print OUTPUT newline(FALSE, "\n" x $line_spacing[-1]);
