@@ -106,7 +106,7 @@ while (defined(my $line = <INPUT>)) {
 				$params{'title'} = "Chapter";
 			}
 
-			$current_node = Tree::Simple->new({type => 'Chapter', title => $params{'title'}}, $current_node);
+			$current_node = Tree::Simple->new({type => 'Chapter', title => $params{'title'}, file => $params{'file'}}, $current_node);
 		} elsif ($params{'tag_name'} eq '/chapter') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'literal') {
@@ -138,11 +138,11 @@ while (defined(my $line = <INPUT>)) {
 			$current_node = $current_node->getParent;
 			$output_preformatted = FALSE;
 		} elsif ($params{'tag_name'} eq 'box') {
-			$current_node = Tree::Simple->new({type => 'Box'}, $current_node);
+			$current_node = Tree::Simple->new({type => 'Box', mode => $params{'type'}}, $current_node);
 		} elsif ($params{'tag_name'} eq '/box') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'list') {
-			$current_node = Tree::Simple->new({type => 'List'}, $current_node);
+			$current_node = Tree::Simple->new({type => 'List', mode => $params{'type'}, spacing => $params{'spacing'}}, $current_node);
 		} elsif ($params{'tag_name'} eq '/list') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'definition') {
