@@ -291,7 +291,7 @@ The <code>&lt;codeblock&gt; ... &lt;/codeblock&gt;</code> tag pair enclose a sec
 The are no defined attributes.
 </definition>
 
-The <code>&lt;box&gt; ... &lt;/box&gt; tag can be used to highlight a block of text from the surrounding paragraphs.
+The <code>&lt;box&gt; ... &lt;/box&gt;</code> tag can be used to highlight a block of text from the surrounding paragraphs.
 
 <definition target="&lt;box&gt; ... &lt;/box&gt;">
 The <code>&lt;box&gt; ... &lt;/box&gt;</code> tag pair enclose a section of text that is to be highlighted or stand out from the remaining copy (such as a 'box' in a magazine).
