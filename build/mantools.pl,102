@@ -105,7 +105,6 @@ while (defined(my $line = <INPUT>)) {
 			if (!defined($params{'title'})) {
 				$params{'title'} = "Chapter";
 			}
-
 			$current_node = Tree::Simple->new({type => 'Chapter', title => $params{'title'}, file => $params{'file'}}, $current_node);
 		} elsif ($params{'tag_name'} eq '/chapter') {
 			$current_node = $current_node->getParent;
@@ -134,7 +133,6 @@ while (defined(my $line = <INPUT>)) {
 			if (!defined($params{'title'})) {
 				$params{'title'} = "Subheading";
 			}
-
 			Tree::Simple->new({type => 'Subhead', title => $params{'title'}}, $current_node);
 		} elsif ($params{'tag_name'} eq 'codeblock') {
 			$current_node = Tree::Simple->new({type => 'Codeblock'}, $current_node);
