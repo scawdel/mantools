@@ -150,7 +150,7 @@ to set the constant <code>foo</code> to the value &quot;bar&quot;. Within a lite
 
 Alternatively, the variable could have been defined as a command-line parameter to the script:
 
-<command>textman -Iinfile -Ooutfile -Dfoo=bar</code>
+<command>textman -Iinfile -Ooutfile -Dfoo=bar</command>
 
 When parameters are passed in this way, they override any <code>&lt;define&nbsp;...&gt;</code> tags found in the script file.
 
