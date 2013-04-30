@@ -110,6 +110,7 @@ while (defined(my $line = <INPUT>)) {
 		} elsif ($params{'tag_name'} eq '/chapter') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'literal') {
+			my $literal = "";
 			my $literal_line = "";
 
 			if (!defined($params{'mode'})) {
@@ -122,8 +123,12 @@ while (defined(my $line = <INPUT>)) {
 						$literal_line = "$`$defs{$1}$'";
 					}
 
-					#print OUTPUT $literal_line;
+					$literal .= $literal_line;
 				}
+			}
+
+			if ($literal ne "") {
+				Tree::Simple->new({type => 'Literal', content => $literal}, $current_node);
 			}
 		} elsif ($params{'tag_name'} eq 'subhead') {
 			if (!defined($params{'title'})) {
@@ -181,7 +186,9 @@ $parse_tree->traverse(sub {
 
 	print "--> " x $node->getDepth();
 
-	if ($type eq 'Paragraph') {
+	if ($type eq 'Literal') {
+		print "Literal: '".substr($node->getNodeValue()->{'content'}, 0, 20)."...'\n";
+	} elsif ($type eq 'Paragraph') {
 		print "Paragraph: '".substr($node->getNodeValue()->{'content'}, 0, 20)."...'\n";
 	} else {
 		print "Node Type '".$type."'\n";
