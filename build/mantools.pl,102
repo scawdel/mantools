@@ -177,21 +177,34 @@ while (defined(my $line = <INPUT>)) {
 	}
 }
 
-$parse_tree->traverse(sub {
-	my ($node) = @_;
 
+my $open_html = sub {
+	my ($node) = @_;
 	my $type = $node->getNodeValue()->{'type'};
 
-	print "--> " x $node->getDepth();
-
 	if ($type eq 'Literal') {
-		print "Literal: '".substr($node->getNodeValue()->{'content'}, 0, 20)."...'\n";
+		print $node->getNodeValue()->{'content'};
+	} elsif ($type eq 'Chapter') {
+		print "\n<div><h2>".$node->getNodeValue()->{'title'}."</h2>\n";
+	} elsif ($type eq 'Subhead') {
+		print "\n<h3>".$node->getNodeValue()->{'title'}."</h3>\n";
 	} elsif ($type eq 'Paragraph') {
-		print "Paragraph: '".substr($node->getNodeValue()->{'content'}, 0, 20)."...'\n";
+	#	print "Paragraph: '".substr($node->getNodeValue()->{'content'}, 0, 20)."...'\n";
 	} else {
-		print "Node Type '".$type."'\n";
+	#	print "Node Type '".$type."'\n";
 	}
-});
+};
+
+my $close_html = sub {
+	my ($node) = @_;
+	my $type = $node->getNodeValue()->{'type'};
+
+	if ($type eq 'Chapter') {
+		print "</div>\n";
+	}
+};
+
+$parse_tree->traverse($open_html, $close_html);
 
 
 
