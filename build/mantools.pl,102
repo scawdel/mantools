@@ -149,9 +149,9 @@ while (defined(my $line = <INPUT>)) {
 			if (!defined($params{'target'})) {
 				$params{'target'} = "Definition";
 			}
-			#print OUTPUT "\n<dl><dt><b>".$params{'target'}."</b></dt>\n<dd>\n";
+			$current_node = Tree::Simple->new({type => 'Definition', target => $params{'target'}}, $current_node);
 		} elsif ($params{'tag_name'} eq '/definition') {
-			#print OUTPUT "</dd></dl>\n";
+			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'comdef') {
 			my $command = "";
 			if (defined($params{'target'})) {
@@ -163,9 +163,9 @@ while (defined(my $line = <INPUT>)) {
 				$command .= " <i>".$params{'params'}."</i>";
 			}
 			$command .= "</dt>\n<dd>\n";
-			#print OUTPUT $command;
+			$current_node = Tree::Simple->new({type => 'ComDef', target => $params{'target'}, params => $params{'params'}}, $current_node);
 		} elsif ($params{'tag_name'} eq '/comdef') {
-			#print OUTPUT "</dd></dl>\n";
+			$current_node = $current_node->getParent;
 		}
 	} elsif ($line !~ /^\s*$/  || $output_preformatted) {
 		Tree::Simple->new({type => 'Paragraph', content => $line}, $current_node);
