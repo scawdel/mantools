@@ -177,8 +177,6 @@ while (defined(my $line = <INPUT>)) {
 	}
 }
 
-#$parse_tree->DESTROY;
-
 $parse_tree->traverse(sub {
 	my ($node) = @_;
 
@@ -195,13 +193,6 @@ $parse_tree->traverse(sub {
 	}
 });
 
-
-#sub traverse
-#{
-#		my ($node) = @_;
-		#print (("\t" x $node->getDepth()), $node->getNodeValue(){'type'}, "\n");
-#
-#}
 
 
 # -------------------------------------------------------------------------------------------------
