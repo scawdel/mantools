@@ -787,6 +787,10 @@ This version of <cite>Locate</cite> is still not finished and several intended f
 <li>Cache search results or file locations in a file for faster searching.
 A second line in a list item...
 <li>Correctly measure icon sprite widths when laying out the results window.
+<list>
+<li>This is a nested list!
+<li>With two items!
+</list>
 <li>Search the contents of Squashed files.
 <li>Allow actions to be carried out on found objects (set type, delete, etc.).
 <li>Give the search in field a drop-down menu listing the individual paths; toggle each on and off, and open individual entries?

@@ -145,9 +145,14 @@ while (defined(my $line = <INPUT>)) {
 		} elsif ($params{'tag_name'} eq '/box') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'list') {
+			if ($current_node->getNodeValue->{'object'} eq 'ListItem') {
+				# If this is a nested list, close the parent list item before nesting.
+				$current_node = $current_node->getParent;
+			}
 			$current_node = Tree::Simple->new({object => 'List', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/list') {
 			if ($current_node->getNodeValue->{'object'} eq 'ListItem') {
+				# If we're in a list item, end it first.
 				$current_node = $current_node->getParent;
 			}
 			$current_node = $current_node->getParent;
@@ -176,6 +181,7 @@ while (defined(my $line = <INPUT>)) {
 	} elsif ($line !~ /^\s*$/  || $output_preformatted) {
 		if ($line =~ /^<li>/) {
 			if ($current_node->getNodeValue->{'object'} eq 'ListItem') {
+				# If we're already in a list item, end it before starting a new one.
 				$current_node = $current_node->getParent;
 			}
 			$current_node = Tree::Simple->new({object => 'ListItem'}, $current_node);
