@@ -135,7 +135,7 @@ while (defined(my $line = <INPUT>)) {
 			}
 			Tree::Simple->new({object => 'Subhead', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq 'codeblock') {
-			$current_node = Tree::Simple->new({object => 'Codeblock'}, $current_node);
+			$current_node = Tree::Simple->new({object => 'CodeBlock'}, $current_node);
 			$output_preformatted = TRUE;
 		} elsif ($params{'tag_name'} eq '/codeblock'){
 			$current_node = $current_node->getParent;
@@ -215,8 +215,17 @@ my $open_html = sub {
 		}
 	} elsif ($object eq 'ListItem') {
 		print OUTPUT "<li>";
+	} elsif ($object eq 'CodeBlock') {
+		print OUTPUT "<pre>";
+	} elsif ($object eq 'Box') {
+		print OUTPUT "<div style=\"margin-left: 3em; padding: 0 0 0 52px; border-left: 5px solid gray; overflow: hidden;\">";
+		if (lc($node->getNodeValue()->{'type'}) eq 'info') {
+			print OUTPUT "<img src=\"info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
+		} elsif (lc($node->getNodeValue()->{'type'}) eq 'warning') {
+			print OUTPUT "<img src=\"warning.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
+		}
 	} elsif ($object eq 'Paragraph') {
-		print OUTPUT output_line($node->getNodeValue()->{'content'}, FALSE);
+		print OUTPUT output_line($node->getNodeValue()->{'content'}, first_node($node), last_node($node), $node->getParent->getNodeValue()->{'object'} eq 'CodeBlock');
 	} else {
 		print "Node Type '".$object."'\n";
 	}
@@ -239,11 +248,58 @@ my $close_html = sub {
 		}
 	} elsif ($object eq 'ListItem') {
 		print OUTPUT "</li>\n";
+	} elsif ($object eq 'CodeBlock') {
+		print OUTPUT "</pre>\n";
+	} elsif ($object eq 'Box') {
+		print OUTPUT "</div>\n";
 	}
 };
 
 $parse_tree->traverse($open_html, $close_html);
 
+
+
+sub first_node
+{
+	my ($node) = @_;
+
+	if ($node->getDepth == 0) {
+		return FALSE;
+	}
+
+	my $parent = $node->getParent->getNodeValue();
+
+	if ($parent->{'object'} ne 'ListItem' && $parent->{'object'} ne 'Box') {
+		return FALSE;
+	}
+
+	if ($node->getIndex == 0) {
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+sub last_node
+{
+	my ($node) = @_;
+
+	if ($node->getDepth == 0) {
+		return FALSE;
+	}
+
+	my $parent = $node->getParent->getNodeValue();
+
+	if ($parent->{'object'} ne 'ListItem' && $parent->{'object'} ne 'Box') {
+		return FALSE;
+	}
+
+	if ($node->getIndex == $node->getParent->getChildCount - 1) {
+		return TRUE;
+	}
+
+	return FALSE;
+}
 
 
 # -------------------------------------------------------------------------------------------------
@@ -256,7 +312,7 @@ $parse_tree->traverse($open_html, $close_html);
 
 sub output_line
 {
-	my ($line, $preformatted) = @_;
+	my ($line, $first, $last, $preformatted) = @_;
 
 	# <cite>, <code>, <em> and <strong> just get left as-is.
 
@@ -289,7 +345,17 @@ sub output_line
 	# If the line isn't preformatted, then enclose it in <p> tags.
 
 	if (!$preformatted) {
-		$line = "<p>".$line."</p>";
+		my $margins = "";
+
+		if ($first && $last) {
+			$margins = " style=\"margin-top: 0em; margin-bottom: 0em;\"";
+		} elsif ($first) {
+			$margins = " style=\"margin-top: 0em;\"";
+		} elsif ($last) {
+			$margins = " style=\"margin-bottom: 0em;\"";
+		}
+
+		$line = "<p".$margins.">".$line."</p>";
 	}
 
 	# If the start of the line is bulledted, swap the <li> and the <p>
