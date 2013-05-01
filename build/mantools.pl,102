@@ -147,6 +147,9 @@ while (defined(my $line = <INPUT>)) {
 		} elsif ($params{'tag_name'} eq 'list') {
 			$current_node = Tree::Simple->new({object => 'List', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/list') {
+			if ($current_node->getNodeValue->{'object'} eq 'ListItem') {
+				$current_node = $current_node->getParent;
+			}
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'definition') {
 			if (!defined($params{'target'})) {
@@ -172,10 +175,14 @@ while (defined(my $line = <INPUT>)) {
 		}
 	} elsif ($line !~ /^\s*$/  || $output_preformatted) {
 		if ($line =~ /^<li>/) {
-			Tree::Simple->new({object => 'ListItem', content => $line}, $current_node);
-		} else {
-			Tree::Simple->new({object => 'Paragraph', content => $line}, $current_node);
+			if ($current_node->getNodeValue->{'object'} eq 'ListItem') {
+				$current_node = $current_node->getParent;
+			}
+			$current_node = Tree::Simple->new({object => 'ListItem'}, $current_node);
+
+			$line =~ s/^<li>//;
 		}
+		Tree::Simple->new({object => 'Paragraph', content => $line}, $current_node);
 	}
 }
 
@@ -190,19 +197,42 @@ my $open_html = sub {
 		print "\n<div><h2>".$node->getNodeValue()->{'title'}."</h2>\n";
 	} elsif ($object eq 'Subhead') {
 		print "\n<h3>".$node->getNodeValue()->{'title'}."</h3>\n";
+	} elsif ($object eq 'List') {
+		if (lc($node->{'type'}) eq 'num') {
+			print "<ol type=\"1\">\n";
+		} elsif (lc($node->{'type'}) eq 'upper') {
+			print "<ol type=\"A\">\n";
+		} elsif (lc($node->{'type'}) eq 'lower') {
+			print "<ol type=\"a\">\n";
+		} else {
+			print "<ul>\n";
+		}
+	} elsif ($object eq 'ListItem') {
+		print "<li>";
 	} elsif ($object eq 'Paragraph') {
-	#	print "Paragraph: '".substr($node->getNodeValue()->{'content'}, 0, 20)."...'\n";
+		print output_line($node->getNodeValue()->{'content'}, FALSE);
 	} else {
-	#	print "Node Type '".$object."'\n";
+		print "Node Type '".$object."'\n";
 	}
 };
 
 my $close_html = sub {
 	my ($node) = @_;
-	my $object = $node->getNodeValue()->{'object'};
+
+	$node = $node->getNodeValue();
+
+	my $object = $node->{'object'};
 
 	if ($object eq 'Chapter') {
 		print "</div>\n";
+	} elsif ($object eq 'List') {
+		if (lc($node->{'type'}) eq 'num' || lc($node->{'type'}) eq 'upper' || lc($node->{'type'}) eq 'lower') {
+			print "</ol>\n";
+		} else {
+			print "</ul>\n";
+		}
+	} elsif ($object eq 'ListItem') {
+		print "</li>\n";
 	}
 };
 

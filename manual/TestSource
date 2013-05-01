@@ -785,6 +785,7 @@ This version of <cite>Locate</cite> is still not finished and several intended f
 
 <list>
 <li>Cache search results or file locations in a file for faster searching.
+A second line in a list item...
 <li>Correctly measure icon sprite widths when laying out the results window.
 <li>Search the contents of Squashed files.
 <li>Allow actions to be carried out on found objects (set type, delete, etc.).
