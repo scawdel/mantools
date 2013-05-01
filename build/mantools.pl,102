@@ -222,7 +222,7 @@ my $open_html = sub {
 		if (lc($node->getNodeValue()->{'type'}) eq 'info') {
 			print OUTPUT "<img src=\"info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		} elsif (lc($node->getNodeValue()->{'type'}) eq 'warning') {
-			print OUTPUT "<img src=\"warning.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
+			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		}
 	} elsif ($object eq 'Paragraph') {
 		print OUTPUT output_line($node->getNodeValue()->{'content'}, first_node($node), last_node($node), $node->getParent->getNodeValue()->{'object'} eq 'CodeBlock');
