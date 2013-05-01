@@ -80,7 +80,7 @@ if (scalar(@ARGV) > 2) {
 
 # Open the input and output files -- there is only one output file used.
 
-my $parse_tree = Tree::Simple->new({type => 'Root'}, Tree::Simple->ROOT);
+my $parse_tree = Tree::Simple->new({object => 'Root'}, Tree::Simple->ROOT);
 my $current_node = $parse_tree;
 
 open(INPUT, $infile) || die "Can't open input file $infile: $!\n";
@@ -105,7 +105,7 @@ while (defined(my $line = <INPUT>)) {
 			if (!defined($params{'title'})) {
 				$params{'title'} = "Chapter";
 			}
-			$current_node = Tree::Simple->new({type => 'Chapter', title => $params{'title'}, file => $params{'file'}}, $current_node);
+			$current_node = Tree::Simple->new({object => 'Chapter', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/chapter') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'literal') {
@@ -127,32 +127,32 @@ while (defined(my $line = <INPUT>)) {
 			}
 
 			if ($literal ne "") {
-				Tree::Simple->new({type => 'Literal', content => $literal}, $current_node);
+				Tree::Simple->new({object => 'Literal', content => $literal}, $current_node);
 			}
 		} elsif ($params{'tag_name'} eq 'subhead') {
 			if (!defined($params{'title'})) {
 				$params{'title'} = "Subheading";
 			}
-			Tree::Simple->new({type => 'Subhead', title => $params{'title'}}, $current_node);
+			Tree::Simple->new({object => 'Subhead', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq 'codeblock') {
-			$current_node = Tree::Simple->new({type => 'Codeblock'}, $current_node);
+			$current_node = Tree::Simple->new({object => 'Codeblock'}, $current_node);
 			$output_preformatted = TRUE;
 		} elsif ($params{'tag_name'} eq '/codeblock'){
 			$current_node = $current_node->getParent;
 			$output_preformatted = FALSE;
 		} elsif ($params{'tag_name'} eq 'box') {
-			$current_node = Tree::Simple->new({type => 'Box', mode => $params{'type'}}, $current_node);
+			$current_node = Tree::Simple->new({object => 'Box', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/box') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'list') {
-			$current_node = Tree::Simple->new({type => 'List', mode => $params{'type'}, spacing => $params{'spacing'}}, $current_node);
+			$current_node = Tree::Simple->new({object => 'List', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/list') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'definition') {
 			if (!defined($params{'target'})) {
 				$params{'target'} = "Definition";
 			}
-			$current_node = Tree::Simple->new({type => 'Definition', target => $params{'target'}}, $current_node);
+			$current_node = Tree::Simple->new({object => 'Definition', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/definition') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'comdef') {
@@ -166,38 +166,42 @@ while (defined(my $line = <INPUT>)) {
 				$command .= " <i>".$params{'params'}."</i>";
 			}
 			$command .= "</dt>\n<dd>\n";
-			$current_node = Tree::Simple->new({type => 'ComDef', target => $params{'target'}, params => $params{'params'}}, $current_node);
+			$current_node = Tree::Simple->new({object => 'ComDef', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/comdef') {
 			$current_node = $current_node->getParent;
 		}
 	} elsif ($line !~ /^\s*$/  || $output_preformatted) {
-		Tree::Simple->new({type => 'Paragraph', content => $line}, $current_node);
+		if ($line =~ /^<li>/) {
+			Tree::Simple->new({object => 'ListItem', content => $line}, $current_node);
+		} else {
+			Tree::Simple->new({object => 'Paragraph', content => $line}, $current_node);
+		}
 	}
 }
 
 
 my $open_html = sub {
 	my ($node) = @_;
-	my $type = $node->getNodeValue()->{'type'};
+	my $object = $node->getNodeValue()->{'object'};
 
-	if ($type eq 'Literal') {
+	if ($object eq 'Literal') {
 		print $node->getNodeValue()->{'content'};
-	} elsif ($type eq 'Chapter') {
+	} elsif ($object eq 'Chapter') {
 		print "\n<div><h2>".$node->getNodeValue()->{'title'}."</h2>\n";
-	} elsif ($type eq 'Subhead') {
+	} elsif ($object eq 'Subhead') {
 		print "\n<h3>".$node->getNodeValue()->{'title'}."</h3>\n";
-	} elsif ($type eq 'Paragraph') {
+	} elsif ($object eq 'Paragraph') {
 	#	print "Paragraph: '".substr($node->getNodeValue()->{'content'}, 0, 20)."...'\n";
 	} else {
-	#	print "Node Type '".$type."'\n";
+	#	print "Node Type '".$object."'\n";
 	}
 };
 
 my $close_html = sub {
 	my ($node) = @_;
-	my $type = $node->getNodeValue()->{'type'};
+	my $object = $node->getNodeValue()->{'object'};
 
-	if ($type eq 'Chapter') {
+	if ($object eq 'Chapter') {
 		print "</div>\n";
 	}
 };
