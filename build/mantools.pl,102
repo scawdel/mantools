@@ -71,12 +71,12 @@ if (scalar(@ARGV) > 2) {
 	# compatibility.
 
 	$infile = $ARGV[0];
-	#$outfile = $ARGV[1];
+	$outfile = $ARGV[1];
 }
 
-#if (!defined($infile) || !defined($outfile)) {
-#	die "Missing input or output filename parameters.\n";
-#}
+if (!defined($infile) || !defined($outfile)) {
+	die "Missing input or output filename parameters.\n";
+}
 
 # Open the input and output files -- there is only one output file used.
 
@@ -84,7 +84,7 @@ my $parse_tree = Tree::Simple->new({object => 'Root'}, Tree::Simple->ROOT);
 my $current_node = $parse_tree;
 
 open(INPUT, $infile) || die "Can't open input file $infile: $!\n";
-#open(OUTPUT, ">".$outfile) || die "Can't open output file $outfile: $!\n";
+open(OUTPUT, ">".$outfile) || die "Can't open output file $outfile: $!\n";
 
 # Read the lines in one at a time and process them.
 
@@ -192,25 +192,25 @@ my $open_html = sub {
 	my $object = $node->getNodeValue()->{'object'};
 
 	if ($object eq 'Literal') {
-		print $node->getNodeValue()->{'content'};
+		print OUTPUT $node->getNodeValue()->{'content'};
 	} elsif ($object eq 'Chapter') {
-		print "\n<div><h2>".$node->getNodeValue()->{'title'}."</h2>\n";
+		print OUTPUT "\n<div><h2>".$node->getNodeValue()->{'title'}."</h2>\n";
 	} elsif ($object eq 'Subhead') {
-		print "\n<h3>".$node->getNodeValue()->{'title'}."</h3>\n";
+		print OUTPUT "\n<h3>".$node->getNodeValue()->{'title'}."</h3>\n";
 	} elsif ($object eq 'List') {
 		if (lc($node->{'type'}) eq 'num') {
-			print "<ol type=\"1\">\n";
+			print OUTPUT "<ol type=\"1\">\n";
 		} elsif (lc($node->{'type'}) eq 'upper') {
-			print "<ol type=\"A\">\n";
+			print OUTPUT "<ol type=\"A\">\n";
 		} elsif (lc($node->{'type'}) eq 'lower') {
-			print "<ol type=\"a\">\n";
+			print OUTPUT "<ol type=\"a\">\n";
 		} else {
-			print "<ul>\n";
+			print OUTPUT "<ul>\n";
 		}
 	} elsif ($object eq 'ListItem') {
-		print "<li>";
+		print OUTPUT "<li>";
 	} elsif ($object eq 'Paragraph') {
-		print output_line($node->getNodeValue()->{'content'}, FALSE);
+		print OUTPUT output_line($node->getNodeValue()->{'content'}, FALSE);
 	} else {
 		print "Node Type '".$object."'\n";
 	}
@@ -224,15 +224,15 @@ my $close_html = sub {
 	my $object = $node->{'object'};
 
 	if ($object eq 'Chapter') {
-		print "</div>\n";
+		print OUTPUT "</div>\n";
 	} elsif ($object eq 'List') {
 		if (lc($node->{'type'}) eq 'num' || lc($node->{'type'}) eq 'upper' || lc($node->{'type'}) eq 'lower') {
-			print "</ol>\n";
+			print OUTPUT "</ol>\n";
 		} else {
-			print "</ul>\n";
+			print OUTPUT "</ul>\n";
 		}
 	} elsif ($object eq 'ListItem') {
-		print "</li>\n";
+		print OUTPUT "</li>\n";
 	}
 };
 
