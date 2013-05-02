@@ -200,7 +200,7 @@ my $open_html = sub {
 	if ($object eq 'Literal') {
 		print OUTPUT $node->getNodeValue()->{'content'};
 	} elsif ($object eq 'Chapter') {
-		print OUTPUT "\n<div><h2>".$node->getNodeValue()->{'title'}."</h2>\n";
+		print OUTPUT "\n<div><a name=\"".$node->getNodeValue()->{'file'}."\"></a><h2>".$node->getNodeValue()->{'title'}."</h2>\n";
 	} elsif ($object eq 'Subhead') {
 		print OUTPUT "\n<h3>".$node->getNodeValue()->{'title'}."</h3>\n";
 	} elsif ($object eq 'List') {
