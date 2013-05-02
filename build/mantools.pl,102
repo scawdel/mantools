@@ -224,6 +224,20 @@ my $open_html = sub {
 		} elsif (lc($node->getNodeValue()->{'type'}) eq 'warning') {
 			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		}
+	} elsif ($object eq 'Definition') {
+		print OUTPUT "<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>\n";
+	} elsif ($object eq 'ComDef') {
+			my $command = "";
+			if (defined($node->getNodeValue()->{'target'})) {
+				$command = "\n<dl><dt><b>".$node->getNodeValue()->{'target'}."</b>";
+			} else {
+				$command = "\n<dl><dt><b>Command</b>";
+			}
+			if (defined($node->getNodeValue()->{'params'})) {
+				$command .= " <i>".$node->getNodeValue()->{'params'}."</i>";
+			}
+			$command .= "</dt>\n<dd>\n";
+			print OUTPUT $command;
 	} elsif ($object eq 'Paragraph') {
 		print OUTPUT output_line($node->getNodeValue()->{'content'}, first_node($node), last_node($node), $node->getParent->getNodeValue()->{'object'} eq 'CodeBlock');
 	} else {
@@ -252,6 +266,8 @@ my $close_html = sub {
 		print OUTPUT "</pre>\n";
 	} elsif ($object eq 'Box') {
 		print OUTPUT "</div>\n";
+	} elsif ($object eq 'Definition' || $object eq 'ComDef') {
+		print OUTPUT "</dd></dl>\n";
 	}
 };
 
@@ -269,7 +285,7 @@ sub first_node
 
 	my $parent = $node->getParent->getNodeValue();
 
-	if ($parent->{'object'} ne 'ListItem' && $parent->{'object'} ne 'Box') {
+	if ($parent->{'object'} ne 'ListItem' && $parent->{'object'} ne 'Box' && $parent->{'object'} ne 'Definition' && $parent->{'object'} ne 'ComDef') {
 		return FALSE;
 	}
 
@@ -290,7 +306,7 @@ sub last_node
 
 	my $parent = $node->getParent->getNodeValue();
 
-	if ($parent->{'object'} ne 'ListItem' && $parent->{'object'} ne 'Box') {
+	if ($parent->{'object'} ne 'ListItem' && $parent->{'object'} ne 'Box' && $parent->{'object'} ne 'Definition' && $parent->{'object'} ne 'ComDef') {
 		return FALSE;
 	}
 
