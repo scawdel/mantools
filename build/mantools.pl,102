@@ -22,9 +22,9 @@
 # See the Licence for the specific language governing
 # permissions and limitations under the Licence.
 
-# HTMLMan -- Convert help-markup into HTML files.
+# ManTools -- Convert help-markup into readable files.
 #
-# Usage: HTMLMan -I<infile> -O<outfile> [-D<var>=<val> ...]
+# Usage: ManTools -M<TEXT|HTML|STRONG|DDF> -I<infile> -O<outfile> [-D<var>=<val> ...]
 
 use Tree::Simple;
 
@@ -39,9 +39,6 @@ use constant LIST_NUMERIC	=> 2;
 use constant LIST_UPPER		=> 3;
 use constant LIST_LOWER		=> 4;
 
-# The output type for literals in the file.
-
-my $mode="HTML";
 
 # Formatting variables.
 
@@ -53,29 +50,36 @@ my %defs = ("title", "");
 
 my $infile = undef;
 my $outfile = undef;
+my $mode = undef;
 
-if (scalar(@ARGV) > 2) {
-	# Too many arguments, so assume the new format.
-
-	foreach my $arg (@ARGV) {
-		if ($arg =~ /^-I(.+)/) {
-			$infile = $1;
-		} elsif ($arg =~ /^-O(.+)/) {
-			$outfile = $1;
-		} elsif ($arg =~ /^-D([^=]+)=(.*)/) {
-			$defs{$1} = $2;
-		}
+foreach my $arg (@ARGV) {
+	if ($arg =~ /^-I(.+)/) {
+		$infile = $1;
+	} elsif ($arg =~ /^-O(.+)/) {
+		$outfile = $1;
+	} elsif ($arg =~ /^-M(.+)/) {
+		$mode = uc($1);
+	} elsif ($arg =~ /^-D([^=]+)=(.*)/) {
+		$defs{$1} = $2;
 	}
-} else {
-	# Default to the parameters being <infile> <outfile> for backwards
-	# compatibility.
-
-	$infile = $ARGV[0];
-	$outfile = $ARGV[1];
 }
 
-if (!defined($infile) || !defined($outfile)) {
-	die "Missing input or output filename parameters.\n";
+if (!defined($mode) || !defined($infile) || !defined($outfile)) {
+	die "Missing mode, input or output filename parameters.\n";
+}
+
+# Validate the specified output mode.
+
+my $found = FALSE;
+
+foreach my $item (("HTML")) {
+	if ($item eq $mode) {
+		$found = TRUE;
+	}
+}
+
+if (!$found) {
+	die "Invalid Mode.\n";
 }
 
 # Open the input and output files -- there is only one output file used.
@@ -192,9 +196,11 @@ while (defined(my $line = <INPUT>)) {
 	}
 }
 
+# Turn the tree into the requested output.
 
-
-$parse_tree->traverse(\&html_open, \&html_close);
+if ($mode eq "HTML") {
+	$parse_tree->traverse(\&html_open, \&html_close);
+}
 
 
 # -------------------------------------------------------------------------------------------------
