@@ -193,7 +193,17 @@ while (defined(my $line = <INPUT>)) {
 }
 
 
-my $open_html = sub {
+
+$parse_tree->traverse(\&html_open, \&html_close);
+
+
+# -------------------------------------------------------------------------------------------------
+# Process a node for HTML output.
+#
+# Param: $node			The node to process.
+
+sub html_open
+{
 	my ($node) = @_;
 	my $parent = $node->getParent;
 	my $object = $node->getNodeValue()->{'object'};
@@ -206,33 +216,33 @@ my $open_html = sub {
 		print OUTPUT "\n<h3>".$node->getNodeValue()->{'title'}."</h3>\n";
 	} elsif ($object eq 'List') {
 		if (lc($node->{'type'}) eq 'num') {
-			print OUTPUT "<ol type=\"1\">\n";
+			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
 		} elsif (lc($node->{'type'}) eq 'upper') {
-			print OUTPUT "<ol type=\"A\">\n";
+			print OUTPUT html_opening_nl($node)."<ol type=\"A\">";
 		} elsif (lc($node->{'type'}) eq 'lower') {
-			print OUTPUT "<ol type=\"a\">\n";
+			print OUTPUT html_opening_nl($node)."<ol type=\"a\">";
 		} else {
-			print OUTPUT "<ul>\n";
+			print OUTPUT html_opening_nl($node)."<ul>";
 		}
 	} elsif ($object eq 'ListItem') {
-		print OUTPUT "<li>";
+		print OUTPUT html_opening_nl($node)."<li>";
 	} elsif ($object eq 'CodeBlock') {
-		print OUTPUT "<pre>";
+		print OUTPUT html_opening_nl($node)."<pre>";
 	} elsif ($object eq 'Box') {
-		print OUTPUT "<div style=\"margin-left: 3em; padding: 0 0 0 52px; border-left: 5px solid gray; overflow: hidden;\">";
+		print OUTPUT html_opening_nl($node)."<div style=\"margin-left: 3em; padding: 0 0 0 52px; border-left: 5px solid gray; overflow: hidden;\">";
 		if (lc($node->getNodeValue()->{'type'}) eq 'info') {
 			print OUTPUT "<img src=\"info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		} elsif (lc($node->getNodeValue()->{'type'}) eq 'warning') {
 			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		}
 	} elsif ($object eq 'Definition') {
-		print OUTPUT "<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
+		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
 	} elsif ($object eq 'ComDef') {
-			my $command = "";
+			my $command = html_opening_nl($node);
 			if (defined($node->getNodeValue()->{'target'})) {
-				$command = "\n<dl><dt><b>".$node->getNodeValue()->{'target'}."</b>";
+				$command .= "<dl><dt><b>".$node->getNodeValue()->{'target'}."</b>";
 			} else {
-				$command = "\n<dl><dt><b>Command</b>";
+				$command .= "<dl><dt><b>Command</b>";
 			}
 			if (defined($node->getNodeValue()->{'params'})) {
 				$command .= " <i>".$node->getNodeValue()->{'params'}."</i>";
@@ -246,35 +256,38 @@ my $open_html = sub {
 	} else {
 		print "Node Type '".$object."'\n";
 	}
-};
+}
 
-my $close_html = sub {
+
+# -------------------------------------------------------------------------------------------------
+# Reprocess a node for HTML output once its children have been processed.
+#
+# Param: $node			The node to process.
+
+sub html_close {
 	my ($node) = @_;
 
-	$node = $node->getNodeValue();
-
-	my $object = $node->{'object'};
+	my $value = $node->getNodeValue();
+	my $object = $value->{'object'};
 
 	if ($object eq 'Chapter') {
 		print OUTPUT "</div>\n";
 	} elsif ($object eq 'List') {
-		if (lc($node->{'type'}) eq 'num' || lc($node->{'type'}) eq 'upper' || lc($node->{'type'}) eq 'lower') {
+		if (lc($value->{'type'}) eq 'num' || lc($value->{'type'}) eq 'upper' || lc($value->{'type'}) eq 'lower') {
 			print OUTPUT "</ol>\n";
 		} else {
 			print OUTPUT "</ul>\n";
 		}
 	} elsif ($object eq 'ListItem') {
-		print OUTPUT "</li>\n";
+		print OUTPUT "</li>".html_closing_nl($node);
 	} elsif ($object eq 'CodeBlock') {
-		print OUTPUT "</pre>\n";
+		print OUTPUT "</pre>".html_closing_nl($node);
 	} elsif ($object eq 'Box') {
-		print OUTPUT "</div>\n";
+		print OUTPUT "</div>".html_closing_nl($node);
 	} elsif ($object eq 'Definition' || $object eq 'ComDef') {
-		print OUTPUT "</dd></dl>\n";
+		print OUTPUT "</dd></dl>".html_closing_nl($node);
 	}
-};
-
-$parse_tree->traverse($open_html, $close_html);
+}
 
 
 # -------------------------------------------------------------------------------------------------
