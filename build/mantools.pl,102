@@ -374,13 +374,6 @@ sub output_line
 		$line = "<p".$margins.">".$line."</p>";
 	}
 
-	# If the start of the line is bulledted, swap the <li> and the <p>
-	# tags around.
-
-	if ($line =~ /^<p><li>/) {
-		$line =~ s/^<p><li>\s*/"<li><p>"/e;
-	}
-
 	# Remove any trailing whitespace from the line
 
 	$line =~ s/\s*$//;
