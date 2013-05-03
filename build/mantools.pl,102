@@ -195,6 +195,7 @@ while (defined(my $line = <INPUT>)) {
 
 my $open_html = sub {
 	my ($node) = @_;
+	my $parent = $node->getParent;
 	my $object = $node->getNodeValue()->{'object'};
 
 	if ($object eq 'Literal') {
@@ -239,7 +240,7 @@ my $open_html = sub {
 			$command .= "</dt>\n<dd>\n";
 			print OUTPUT $command;
 	} elsif ($object eq 'Paragraph') {
-		print OUTPUT output_line($node->getNodeValue()->{'content'}, first_node($node), last_node($node), $node->getParent->getNodeValue()->{'object'} eq 'CodeBlock');
+		print OUTPUT output_line($node->getNodeValue()->{'content'}, node_is($parent, 'ListItem', 'Box', 'Definition', 'ComDef') && first_node($node), node_is($parent, 'ListItem', 'Box', 'Definition', 'ComDef') && last_node($node), node_is($parent, 'CodeBlock'));
 	} else {
 		print "Node Type '".$object."'\n";
 	}
@@ -274,6 +275,11 @@ my $close_html = sub {
 $parse_tree->traverse($open_html, $close_html);
 
 
+# -------------------------------------------------------------------------------------------------
+# Test to see if a node is the first of its parent's childen
+#
+# Param: $node			The node to test.
+# Return:			TRUE if the node is the first child; else FALSE.
 
 sub first_node
 {
@@ -283,18 +289,19 @@ sub first_node
 		return FALSE;
 	}
 
-	my $parent = $node->getParent->getNodeValue();
-
-	if ($parent->{'object'} ne 'ListItem' && $parent->{'object'} ne 'Box' && $parent->{'object'} ne 'Definition' && $parent->{'object'} ne 'ComDef') {
+	if ($node->getIndex != 0) {
 		return FALSE;
 	}
 
-	if ($node->getIndex == 0) {
-		return TRUE;
-	}
-
-	return FALSE;
+	return TRUE;
 }
+
+
+# -------------------------------------------------------------------------------------------------
+# Test to see if a node is the last of its parent's childen
+#
+# Param: $node			The node to test.
+# Return:			TRUE if the node is the last child; else FALSE.
 
 sub last_node
 {
@@ -304,17 +311,35 @@ sub last_node
 		return FALSE;
 	}
 
-	my $parent = $node->getParent->getNodeValue();
-
-	if ($parent->{'object'} ne 'ListItem' && $parent->{'object'} ne 'Box' && $parent->{'object'} ne 'Definition' && $parent->{'object'} ne 'ComDef') {
+	if ($node->getIndex != $node->getParent->getChildCount - 1) {
 		return FALSE;
 	}
 
-	if ($node->getIndex == $node->getParent->getChildCount - 1) {
-		return TRUE;
+	return TRUE;
+}
+
+
+# -------------------------------------------------------------------------------------------------
+# Test to see if a node is one of the supplied types.
+#
+# Param: $node			The node to test.
+# Param: @types			A list of types to test against.
+# Return:			TRUE if the node is one of the supplied types; else FALSE.
+
+sub node_is
+{
+	my ($node, @types) = @_;
+
+	my $found = FALSE;
+
+	foreach my $type (@types) {
+		if ($node->getNodeValue()->{'object'} eq $type) {
+			$found = TRUE;
+			last;
+		}
 	}
 
-	return FALSE;
+	return $found;
 }
 
 
