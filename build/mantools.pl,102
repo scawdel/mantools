@@ -72,7 +72,7 @@ if (!defined($mode) || !defined($infile) || !defined($outfile)) {
 
 my $found = FALSE;
 
-foreach my $item (('HTML', 'TEXT')) {
+foreach my $item (('TEXT', 'STRONG', 'HTML')) {
 	if ($item eq $mode) {
 		$found = TRUE;
 	}
@@ -84,13 +84,26 @@ if (!$found) {
 
 # Open the input and output files -- there is only one output file used.
 
-my $parse_tree = Tree::Simple->new({object => 'Root'}, Tree::Simple->ROOT);
+my $parse_tree = Tree::Simple->new({object => 'Root', indent => 0}, Tree::Simple->ROOT);
 my $current_node = $parse_tree;
 
 open(INPUT, $infile) || die "Can't open input file $infile: $!\n";
-open(OUTPUT, ">".$outfile) || die "Can't open output file $outfile: $!\n";
+
+if ($mode eq 'STRONG') {
+	unless ($outfile =~ /\/$/) {
+		$outfile .= '/';
+	}
+
+	if (!(-d $outfile)) {
+		mkdir $outfile, 0755;
+	}
+} else {
+	open(OUTPUT, ">".$outfile) || die "Can't open output file $outfile: $!\n";
+}
 
 # Read the lines in one at a time and process them.
+
+my $current_chapter = 1;
 
 while (defined(my $line = <INPUT>)) {
 	chomp($line);
@@ -105,11 +118,17 @@ while (defined(my $line = <INPUT>)) {
 			if (defined($params{'name'}) && defined($params{'value'}) && !defined($defs{$params{'name'}})) {
 				$defs{$params{'name'}} = $params{'value'};
 			}
+		} elsif ($params{'tag_name'} eq 'document') {
+			$defs{'title'} = $params{'title'};
 		} elsif ($params{'tag_name'} eq 'chapter') {
 			if (!defined($params{'title'})) {
 				$params{'title'} = "Chapter";
 			}
+			if (!defined($params{'file'})) {
+				$params{'file'} = "Chapter".$current_chapter;
+			}
 			$current_node = Tree::Simple->new({object => 'Chapter', %params}, $current_node);
+			$current_chapter += 1;
 		} elsif ($params{'tag_name'} eq '/chapter') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'literal') {
@@ -131,7 +150,7 @@ while (defined(my $line = <INPUT>)) {
 			}
 
 			if ($literal ne "") {
-				Tree::Simple->new({object => 'Literal', content => $literal}, $current_node);
+				Tree::Simple->new({object => 'Literal', content => $literal, %params}, $current_node);
 			}
 		} elsif ($params{'tag_name'} eq 'subhead') {
 			if (!defined($params{'title'})) {
@@ -200,6 +219,8 @@ while (defined(my $line = <INPUT>)) {
 
 if ($mode eq 'TEXT') {
 	$parse_tree->traverse(\&text_open, \&text_close);
+} elsif ($mode eq 'STRONG') {
+	$parse_tree->traverse(\&strong_open, \&strong_close);
 } elsif ($mode eq 'HTML') {
 	$parse_tree->traverse(\&html_open, \&html_close);
 }
@@ -220,11 +241,12 @@ sub text_open
 	if ($object eq 'Literal') {
 		print OUTPUT get_value($node, 'content');
 	} elsif ($object eq 'Chapter') {
-		print OUTPUT get_value($node, 'title')."\n";
-		print OUTPUT "-" x length(get_value($node, 'title'))."\n\n";
+		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
+		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n\n";
+		set_value($node, 'indent', 2);
 	} elsif ($object eq 'Subhead') {
-			print OUTPUT "  ".get_value($node, 'title')."\n";
-			print OUTPUT "  "."-" x length(get_value($node, 'title'))."\n\n";
+		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
+		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n\n";
 	} elsif ($object eq 'List') {
 #		if (lc($node->{'type'}) eq 'num') {
 #			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
@@ -300,6 +322,176 @@ sub text_close
 #		print OUTPUT "</dd></dl>".html_closing_nl($node);
 	}
 }
+
+
+# -------------------------------------------------------------------------------------------------
+# Scan back up the tree and calculate the required indent string for lines in the current node.
+
+sub text_indent
+{
+	my ($node) = @_;
+	my $indent = 0;
+
+	while ($node ne Tree::Simple->ROOT) {
+		if (defined(get_value($node, 'indent'))) {
+			$indent += get_value($node, 'indent');
+		}
+		$node = $node->getParent;
+	}
+
+	return " " x $indent;
+}
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Process a node for Strong Help output.
+#
+# Param: $node			The node to process.
+
+sub strong_open
+{
+	my ($node) = @_;
+	my $parent = $node->getParent;
+	my $object = $node->getNodeValue()->{'object'};
+
+	if ($object eq 'Literal') {
+		print $outfile."\n";
+		print get_value($node, 'file')."\n";
+
+		open(OUTPUT, ">".$outfile.get_value($node, 'file')) || die "Can't open output file: $!\n";
+		print OUTPUT get_value($node, 'content');
+		close(OUTPUT);
+	} elsif ($object eq 'Chapter') {
+		open(OUTPUT, ">".$outfile.get_value($node, 'file')) || die "Can't open output file: $!\n";
+
+		# Output the start of the chapter and set the flags.
+
+		print OUTPUT $defs{'title'}.": ".get_value($node, 'title')."\n";
+		if (defined($defs{'sprites'})) {
+			print OUTPUT "#SpriteFile ".$defs{'sprites'}."\n";
+		}
+		print OUTPUT "{fh1:".get_value($node, 'title')."}\n";
+		print OUTPUT "#Line\n";
+
+		set_value($node, 'indent', 2);
+		print OUTPUT "#Indent ".get_value($node, 'indent')."\n";
+	} elsif ($object eq 'Subhead') {
+#		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
+#		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n\n";
+	} elsif ($object eq 'List') {
+#		if (lc($node->{'type'}) eq 'num') {
+#			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
+#		} elsif (lc($node->{'type'}) eq 'upper') {
+#			print OUTPUT html_opening_nl($node)."<ol type=\"A\">";
+#		} elsif (lc($node->{'type'}) eq 'lower') {
+#			print OUTPUT html_opening_nl($node)."<ol type=\"a\">";
+#		} else {
+#			print OUTPUT html_opening_nl($node)."<ul>";
+#		}
+	} elsif ($object eq 'ListItem') {
+#		print OUTPUT html_opening_nl($node)."<li>";
+	} elsif ($object eq 'CodeBlock') {
+#		print OUTPUT html_opening_nl($node)."<pre>";
+	} elsif ($object eq 'Box') {
+#		print OUTPUT html_opening_nl($node)."<div style=\"margin-left: 3em; padding: 0 0 0 52px; border-left: 5px solid gray; overflow: hidden;\">";
+#		if (lc(get_value($node, 'type')) eq 'info') {
+#			print OUTPUT "<img src=\"info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
+#		} elsif (lc(get_value($node, 'type')) eq 'warning') {
+#			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
+#		}
+	} elsif ($object eq 'Definition') {
+#		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
+	} elsif ($object eq 'ComDef') {
+#			my $command = html_opening_nl($node);
+#			if (defined(get_value($node, 'target'))) {
+#				$command .= "<dl><dt><b>".get_value($node, 'target')."</b>";
+#			} else {
+#				$command .= "<dl><dt><b>Command</b>";
+#			}
+#			if (defined(get_value($node, 'params'))) {
+#				$command .= " <i>".get_value($node, 'params')."</i>";
+#			}
+#			$command .= "</dt>\n<dd>";
+#			print OUTPUT $command;
+	} elsif ($object eq 'Paragraph') {
+#		my $line = html_output_line($node);
+
+#		print OUTPUT html_opening_nl($node).html_opening_p($node).$line.html_closing_p($node).html_closing_nl($node);
+	} else {
+		print "Node Type '".$object."'\n";
+	}
+}
+
+
+# -------------------------------------------------------------------------------------------------
+# Reprocess a node for StrongHelp output once its children have been processed.
+#
+# Param: $node			The node to process.
+
+sub strong_close
+{
+	my ($node) = @_;
+
+	my $value = $node->getNodeValue();
+	my $object = $value->{'object'};
+
+	if ($object eq 'Chapter') {
+		my $previous = "";
+		my $next = "";
+		my $siblings = $node->getAllSiblings;
+
+		# Find the previous and next *chapters*. This isn't the same as the
+		# previous and next nodes, as chapters and literals can be interspresed
+		# and we don't want to include literals.
+
+		if (!first_node($node)) {
+			my $index = $node->getIndex - 1;
+
+			while ($index >= 0 && !node_is($siblings->[$index], 'Contents')) {
+				$index--;
+			}
+
+			if ($index >= 0) {
+				$previous = " Previous: ".get_value($siblings->[$index], 'title');
+			}
+		}
+
+		if (!last_node($node)) {
+			my $index = $node->getIndex - 1;
+
+			while ($index < $node->getParent->getChildCount && !node_is($siblings->[$index], 'Contents')) {
+				$index++;
+			}
+
+			if ($index < $node->getParent->getChildCount) {
+				$next = " Next: ".get_value($node->getSibling($node->getIndex + 1), 'title');
+			}
+		}
+
+		print OUTPUT "#Indent\n";
+		print OUTPUT "#Line\n";
+		print OUTPUT $previous . (($previous ne "" && $next ne "") ? "  " : "") . $next;
+
+		close(OUTPUT);
+	} elsif ($object eq 'List') {
+#		if (lc($value->{'type'}) eq 'num' || lc($value->{'type'}) eq 'upper' || lc($value->{'type'}) eq 'lower') {
+#			print OUTPUT "</ol>\n";
+#		} else {
+#			print OUTPUT "</ul>\n";
+#		}
+	} elsif ($object eq 'ListItem') {
+#		print OUTPUT "</li>".html_closing_nl($node);
+	} elsif ($object eq 'CodeBlock') {
+#		print OUTPUT "</pre>".html_closing_nl($node);
+	} elsif ($object eq 'Box') {
+#		print OUTPUT "</div>".html_closing_nl($node);
+	} elsif ($object eq 'Definition' || $object eq 'ComDef') {
+#		print OUTPUT "</dd></dl>".html_closing_nl($node);
+	}
+}
+
+
 
 
 
