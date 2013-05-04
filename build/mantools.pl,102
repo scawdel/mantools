@@ -149,13 +149,13 @@ while (defined(my $line = <INPUT>)) {
 		} elsif ($params{'tag_name'} eq '/box') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'list') {
-			if ($current_node->getNodeValue->{'object'} eq 'ListItem') {
+			if (node_is($current_node, 'ListItem')) {
 				# If this is a nested list, close the parent list item before nesting.
 				$current_node = $current_node->getParent;
 			}
 			$current_node = Tree::Simple->new({object => 'List', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/list') {
-			if ($current_node->getNodeValue->{'object'} eq 'ListItem') {
+			if (node_is($current_node, 'ListItem')) {
 				# If we're in a list item, end it first.
 				$current_node = $current_node->getParent;
 			}
@@ -184,7 +184,7 @@ while (defined(my $line = <INPUT>)) {
 		}
 	} elsif ($line !~ /^\s*$/  || $output_preformatted) {
 		if ($line =~ /^<li>/) {
-			if ($current_node->getNodeValue->{'object'} eq 'ListItem') {
+			if (node_is($current_node, 'ListItem')) {
 				# If we're already in a list item, end it before starting a new one.
 				$current_node = $current_node->getParent;
 			}
@@ -215,11 +215,11 @@ sub html_open
 	my $object = $node->getNodeValue()->{'object'};
 
 	if ($object eq 'Literal') {
-		print OUTPUT $node->getNodeValue()->{'content'};
+		print OUTPUT get_value($node, 'content');
 	} elsif ($object eq 'Chapter') {
-		print OUTPUT "\n<div><a name=\"".$node->getNodeValue()->{'file'}."\"></a><h2>".$node->getNodeValue()->{'title'}."</h2>\n";
+		print OUTPUT "\n<div><a name=\"".get_value($node, 'file')."\"></a><h2>".get_value($node, 'title')."</h2>\n";
 	} elsif ($object eq 'Subhead') {
-		print OUTPUT "\n<h3>".$node->getNodeValue()->{'title'}."</h3>\n";
+		print OUTPUT "\n<h3>".get_value($node, 'title')."</h3>\n";
 	} elsif ($object eq 'List') {
 		if (lc($node->{'type'}) eq 'num') {
 			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
@@ -236,27 +236,27 @@ sub html_open
 		print OUTPUT html_opening_nl($node)."<pre>";
 	} elsif ($object eq 'Box') {
 		print OUTPUT html_opening_nl($node)."<div style=\"margin-left: 3em; padding: 0 0 0 52px; border-left: 5px solid gray; overflow: hidden;\">";
-		if (lc($node->getNodeValue()->{'type'}) eq 'info') {
+		if (lc(get_value($node, 'type')) eq 'info') {
 			print OUTPUT "<img src=\"info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
-		} elsif (lc($node->getNodeValue()->{'type'}) eq 'warning') {
+		} elsif (lc(get_value($node, 'type')) eq 'warning') {
 			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		}
 	} elsif ($object eq 'Definition') {
 		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
 	} elsif ($object eq 'ComDef') {
 			my $command = html_opening_nl($node);
-			if (defined($node->getNodeValue()->{'target'})) {
-				$command .= "<dl><dt><b>".$node->getNodeValue()->{'target'}."</b>";
+			if (defined(get_value($node, 'target'))) {
+				$command .= "<dl><dt><b>".get_value($node, 'target')."</b>";
 			} else {
 				$command .= "<dl><dt><b>Command</b>";
 			}
-			if (defined($node->getNodeValue()->{'params'})) {
-				$command .= " <i>".$node->getNodeValue()->{'params'}."</i>";
+			if (defined(get_value($node, 'params'))) {
+				$command .= " <i>".get_value($node, 'params')."</i>";
 			}
 			$command .= "</dt>\n<dd>";
 			print OUTPUT $command;
 	} elsif ($object eq 'Paragraph') {
-		my $line = html_output_line($node->getNodeValue()->{'content'});
+		my $line = html_output_line(get_value($node, 'content'));
 
 		print OUTPUT html_opening_nl($node).html_opening_p($node).$line.html_closing_p($node).html_closing_nl($node);
 	} else {
@@ -480,13 +480,42 @@ sub node_is
 	my $found = FALSE;
 
 	foreach my $type (@types) {
-		if ($node->getNodeValue()->{'object'} eq $type) {
+		if (get_value($node, 'object') eq $type) {
 			$found = TRUE;
 			last;
 		}
 	}
 
 	return $found;
+}
+
+
+# -------------------------------------------------------------------------------------------------
+# Return the value from a node's parameter hash entry.
+#
+# Param: $node			The node to target.
+# Param: $parameter		The parameter to return.
+# Return:			The value of the parameter.
+
+sub get_value
+{
+	my ($node, $parameter) = @_;
+
+	return $node->getNodeValue()->{$parameter};
+}
+
+
+# -------------------------------------------------------------------------------------------------
+# Store a value into a node's parameter hash.
+#
+# Param: $node			The node to target.
+# Param: $parameter		The parameter to set.
+
+sub set_value
+{
+	my ($node, $parameter, $value) = @_;
+
+	$node->getNodeValue()->{$parameter} = $value;
 }
 
 
