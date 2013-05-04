@@ -520,7 +520,7 @@ sub set_value
 
 
 # -------------------------------------------------------------------------------------------------
-# Parse a teg, returning a hash containing a set of attribute/value pairs.
+# Parse a tag, returning a hash containing a set of attribute/value pairs.
 # The tag is given an attribute name "tag_name".
 #
 # Param: $tag			The tag to be parsed (eg. "p name="value"").
