@@ -72,7 +72,7 @@ if (!defined($mode) || !defined($infile) || !defined($outfile)) {
 
 my $found = FALSE;
 
-foreach my $item (("HTML")) {
+foreach my $item (('HTML', 'TEXT')) {
 	if ($item eq $mode) {
 		$found = TRUE;
 	}
@@ -198,9 +198,110 @@ while (defined(my $line = <INPUT>)) {
 
 # Turn the tree into the requested output.
 
-if ($mode eq "HTML") {
+if ($mode eq 'TEXT') {
+	$parse_tree->traverse(\&text_open, \&text_close);
+} elsif ($mode eq 'HTML') {
 	$parse_tree->traverse(\&html_open, \&html_close);
 }
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Process a node for Text output.
+#
+# Param: $node			The node to process.
+
+sub text_open
+{
+	my ($node) = @_;
+	my $parent = $node->getParent;
+	my $object = $node->getNodeValue()->{'object'};
+
+	if ($object eq 'Literal') {
+		print OUTPUT get_value($node, 'content');
+	} elsif ($object eq 'Chapter') {
+		print OUTPUT get_value($node, 'title')."\n";
+		print OUTPUT "-" x length(get_value($node, 'title'))."\n\n";
+	} elsif ($object eq 'Subhead') {
+			print OUTPUT "  ".get_value($node, 'title')."\n";
+			print OUTPUT "  "."-" x length(get_value($node, 'title'))."\n\n";
+	} elsif ($object eq 'List') {
+#		if (lc($node->{'type'}) eq 'num') {
+#			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
+#		} elsif (lc($node->{'type'}) eq 'upper') {
+#			print OUTPUT html_opening_nl($node)."<ol type=\"A\">";
+#		} elsif (lc($node->{'type'}) eq 'lower') {
+#			print OUTPUT html_opening_nl($node)."<ol type=\"a\">";
+#		} else {
+#			print OUTPUT html_opening_nl($node)."<ul>";
+#		}
+	} elsif ($object eq 'ListItem') {
+#		print OUTPUT html_opening_nl($node)."<li>";
+	} elsif ($object eq 'CodeBlock') {
+#		print OUTPUT html_opening_nl($node)."<pre>";
+	} elsif ($object eq 'Box') {
+#		print OUTPUT html_opening_nl($node)."<div style=\"margin-left: 3em; padding: 0 0 0 52px; border-left: 5px solid gray; overflow: hidden;\">";
+#		if (lc(get_value($node, 'type')) eq 'info') {
+#			print OUTPUT "<img src=\"info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
+#		} elsif (lc(get_value($node, 'type')) eq 'warning') {
+#			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
+#		}
+	} elsif ($object eq 'Definition') {
+#		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
+	} elsif ($object eq 'ComDef') {
+#			my $command = html_opening_nl($node);
+#			if (defined(get_value($node, 'target'))) {
+#				$command .= "<dl><dt><b>".get_value($node, 'target')."</b>";
+#			} else {
+#				$command .= "<dl><dt><b>Command</b>";
+#			}
+#			if (defined(get_value($node, 'params'))) {
+#				$command .= " <i>".get_value($node, 'params')."</i>";
+#			}
+#			$command .= "</dt>\n<dd>";
+#			print OUTPUT $command;
+	} elsif ($object eq 'Paragraph') {
+#		my $line = html_output_line($node);
+
+#		print OUTPUT html_opening_nl($node).html_opening_p($node).$line.html_closing_p($node).html_closing_nl($node);
+	} else {
+		print "Node Type '".$object."'\n";
+	}
+}
+
+
+# -------------------------------------------------------------------------------------------------
+# Reprocess a node for Text output once its children have been processed.
+#
+# Param: $node			The node to process.
+
+sub text_close
+{
+	my ($node) = @_;
+
+	my $value = $node->getNodeValue();
+	my $object = $value->{'object'};
+
+	if ($object eq 'Chapter') {
+#		print OUTPUT "</div>\n";
+	} elsif ($object eq 'List') {
+#		if (lc($value->{'type'}) eq 'num' || lc($value->{'type'}) eq 'upper' || lc($value->{'type'}) eq 'lower') {
+#			print OUTPUT "</ol>\n";
+#		} else {
+#			print OUTPUT "</ul>\n";
+#		}
+	} elsif ($object eq 'ListItem') {
+#		print OUTPUT "</li>".html_closing_nl($node);
+	} elsif ($object eq 'CodeBlock') {
+#		print OUTPUT "</pre>".html_closing_nl($node);
+	} elsif ($object eq 'Box') {
+#		print OUTPUT "</div>".html_closing_nl($node);
+	} elsif ($object eq 'Definition' || $object eq 'ComDef') {
+#		print OUTPUT "</dd></dl>".html_closing_nl($node);
+	}
+}
+
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -256,7 +357,7 @@ sub html_open
 			$command .= "</dt>\n<dd>";
 			print OUTPUT $command;
 	} elsif ($object eq 'Paragraph') {
-		my $line = html_output_line(get_value($node, 'content'));
+		my $line = html_output_line($node);
 
 		print OUTPUT html_opening_nl($node).html_opening_p($node).$line.html_closing_p($node).html_closing_nl($node);
 	} else {
@@ -300,12 +401,14 @@ sub html_close {
 # Process a line of text from the file, parsing any in-line commands and formatting it for the
 # current file type.
 #
-# Param: $line			The line of text to be written.
+# Param: $node			The node whose contents is to be processed.
 # Return: 			The formatted line.
 
 sub html_output_line
 {
-	my ($line) = @_;
+	my ($node) = @_;
+
+	my $line = get_value($node, 'content');
 
 	# <cite>, <code>, <em> and <strong> just get left as-is.
 
