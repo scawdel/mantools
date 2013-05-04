@@ -343,6 +343,11 @@ sub html_output_line
 }
 
 
+# -------------------------------------------------------------------------------------------------
+# Return an opening \n suitable for a node's paragraph.
+#
+# Param: $node			The node to return the tag for.
+# Return: 			The required newline.
 
 sub html_opening_nl
 {
@@ -354,6 +359,13 @@ sub html_opening_nl
 
 	return (first_node($node) && !node_is($node->getParent, 'Chapter')) ? "" : "\n";
 }
+
+
+# -------------------------------------------------------------------------------------------------
+# Return a closing \n suitable for a node's paragraph.
+#
+# Param: $node			The node to return the tag for.
+# Return: 			The required newline.
 
 sub html_closing_nl
 {
