@@ -356,9 +356,6 @@ sub strong_open
 	my $object = $node->getNodeValue()->{'object'};
 
 	if ($object eq 'Literal') {
-		print $outfile."\n";
-		print get_value($node, 'file')."\n";
-
 		open(OUTPUT, ">".$outfile.get_value($node, 'file')) || die "Can't open output file: $!\n";
 		print OUTPUT get_value($node, 'content');
 		close(OUTPUT);
@@ -377,8 +374,7 @@ sub strong_open
 		set_value($node, 'indent', 2);
 		print OUTPUT "#Indent ".get_value($node, 'indent')."\n";
 	} elsif ($object eq 'Subhead') {
-#		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
-#		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n\n";
+		print OUTPUT "{fh2:".get_value($node, 'title')."}\n\n";
 	} elsif ($object eq 'List') {
 #		if (lc($node->{'type'}) eq 'num') {
 #			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
