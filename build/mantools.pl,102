@@ -89,7 +89,7 @@ my $current_node = $parse_tree;
 
 open(INPUT, $infile) || die "Can't open input file $infile: $!\n";
 
-if ($mode eq 'STRONG') {
+if (FALSE && $mode eq 'STRONG') {
 	unless ($outfile =~ /\/$/) {
 		$outfile .= '/';
 	}
@@ -356,11 +356,11 @@ sub strong_open
 	my $object = $node->getNodeValue()->{'object'};
 
 	if ($object eq 'Literal') {
-		open(OUTPUT, ">".$outfile.get_value($node, 'file')) || die "Can't open output file: $!\n";
+		#open(OUTPUT, ">".$outfile.get_value($node, 'file')) || die "Can't open output file: $!\n";
 		print OUTPUT get_value($node, 'content');
-		close(OUTPUT);
+		#close(OUTPUT);
 	} elsif ($object eq 'Chapter') {
-		open(OUTPUT, ">".$outfile.get_value($node, 'file')) || die "Can't open output file: $!\n";
+		#open(OUTPUT, ">".$outfile.get_value($node, 'file')) || die "Can't open output file: $!\n";
 
 		# Output the start of the chapter and set the flags.
 
@@ -411,7 +411,9 @@ sub strong_open
 #			$command .= "</dt>\n<dd>";
 #			print OUTPUT $command;
 	} elsif ($object eq 'Paragraph') {
-#		my $line = html_output_line($node);
+		my $line = strong_format_line($node);
+
+		print OUTPUT $line."\n";
 
 #		print OUTPUT html_opening_nl($node).html_opening_p($node).$line.html_closing_p($node).html_closing_nl($node);
 	} else {
@@ -438,38 +440,38 @@ sub strong_close
 		my $siblings = $node->getAllSiblings;
 
 		# Find the previous and next *chapters*. This isn't the same as the
-		# previous and next nodes, as chapters and literals can be interspresed
+		# previous and next nodes, as chapters and literals can be interspersed
 		# and we don't want to include literals.
 
 		if (!first_node($node)) {
 			my $index = $node->getIndex - 1;
 
-			while ($index >= 0 && !node_is($siblings->[$index], 'Contents')) {
+			while ($index >= 0 && !node_is($siblings->[$index], 'Chapter')) {
 				$index--;
 			}
 
 			if ($index >= 0) {
-				$previous = " Previous: ".get_value($siblings->[$index], 'title');
+				$previous = "\x8f Previous: <".get_value($siblings->[$index], 'title')."=>".get_value($siblings->[$index], 'file').">";
 			}
 		}
 
 		if (!last_node($node)) {
-			my $index = $node->getIndex - 1;
+			my $index = $node->getIndex + 1;
 
-			while ($index < $node->getParent->getChildCount && !node_is($siblings->[$index], 'Contents')) {
+			while ($index < $node->getParent->getChildCount && !node_is($siblings->[$index], 'Chapter')) {
 				$index++;
 			}
 
 			if ($index < $node->getParent->getChildCount) {
-				$next = " Next: ".get_value($node->getSibling($node->getIndex + 1), 'title');
+				$next = "\x8f Next: <".get_value($siblings->[$index], 'title')."=>".get_value($siblings->[$index], 'file').">";
 			}
 		}
 
 		print OUTPUT "#Indent\n";
 		print OUTPUT "#Line\n";
-		print OUTPUT $previous . (($previous ne "" && $next ne "") ? "  " : "") . $next;
+		print OUTPUT $previous . (($previous ne "" && $next ne "") ? "  " : "") . $next . "\n";
 
-		close(OUTPUT);
+		#close(OUTPUT);
 	} elsif ($object eq 'List') {
 #		if (lc($value->{'type'}) eq 'num' || lc($value->{'type'}) eq 'upper' || lc($value->{'type'}) eq 'lower') {
 #			print OUTPUT "</ol>\n";
@@ -487,6 +489,91 @@ sub strong_close
 	}
 }
 
+
+# -------------------------------------------------------------------------------------------------
+# Process a line of text from the file, parsing any in-line commands and formatting it for
+# StrongHelp format output.
+#
+# Param: $node			The node whose contents is to be processed.
+# Return: 			The formatted line.
+
+sub strong_format_line
+{
+	my ($node) = @_;
+
+	my $line = get_value($node, 'content');
+
+	$line =~ s/<cite>(.*?)<\/cite>/{f\/:$1}/g;		# Citation - no effect
+	$line =~ s/<code>(.*?)<\/code>/{fcode:$1}/g;		# Typed - enclose in ""
+	$line =~ s/<command>(.*?)<\/command>/{fcode:$1}/g;	# Typed - enclose in ""
+	$line =~ s/<em>(.*?)<\/em>/{f\/:$1}/g;			# Emphasis - To Upper
+	$line =~ s/<entry>(.*?)<\/entry>/{fcode:$1}/g;		# User entry - enclose in ""
+	$line =~ s/<file>(.*?)<\/file>/{f\/:$1}/g;		# Filename - no effect
+	$line =~ s/<icon>(.*?)<\/icon>/{f*:$1}/g;		# Icon labels - enclose in ''
+	$line =~ s/<key>(.*?)<\/key>/ucfirst $1/eg;		# Key names - initial capital
+	$line =~ s/<menu>(.*?)<\/menu>/\{f*\}$1\{f\}/g;		# Menu entries - enclose in ''
+	$line =~ s/<mouse>(.*?)<\/mouse>/ucfirst $1/eg;		# Mouse buttons - initial capital
+	$line =~ s/<param>(.*?)<\/param>/{fcode:$1}/g;		# Parameter - code
+	$line =~ s/<strong>(.*?)<\/strong>/{f*:$1}/g;		# Strong Emphasis - To Upper
+	$line =~ s/<window>(.*?)<\/window>/{f*:$1}/g;		# Window names - no effect
+
+	$line =~ s/([\\#])/\\$1/g;				# Any \s in the line must be escaped to \\.
+
+	# Convert all the hyperlinks into StrongHelp format.
+
+	while ($line =~ /<link ref="(.*?)">(.*?)<\/link>/) {
+		my $link_prefix = $`;
+		my $link_ref = $1;
+		my $link_text = $2;
+		my $link_postfix = $';
+
+		if ($link_ref =~ /^http:/) {
+			$link_ref = "#url $link_ref";
+		}
+
+		$line = "$link_prefix<$link_text=>$link_ref>$link_postfix";
+	}
+
+	# Convert entities into their target characters.
+
+	my %entities = (
+		"lt",		'\<',
+		"gt",		'\>',
+		"quot",		'"',
+		"ndash",	"\x97",
+		"nbsp",		"\xa0",
+		"msep",		"{f31:\xd5}",
+		"amp",		"&"
+	);
+
+	$line = substitute_entities($line, %entities);
+
+	# If we are in bullet mode, insert a tab after any bullet (or at the start of the line).
+
+#	if ($list_type != 0) {
+#		if ($line =~ /^<li>/) {
+#			my $indent_string = "";
+
+#			if ($list_type == LIST_BULLET) {
+#				$indent_string = '';
+#			} elsif ($list_type == LIST_NUMERIC) {
+#				$indent_string = $$list_value++.".";
+#			} elsif ($list_type == LIST_UPPER) {
+#				$indent_string = sprintf ("%c)", 64 + $$list_value++);
+#			} elsif ($list_type == LIST_LOWER) {
+#				$indent_string = sprintf ("%c)", 96 + $$list_value++);
+#			}
+
+#			$line =~ s/^<li>\s*/$indent_string."\t"/e;
+#		} else {
+#			$line = "\t".$line;
+#		}
+#	}
+
+	# Output the line of text.
+
+	return $line . "\n";
+}
 
 
 
@@ -545,7 +632,7 @@ sub html_open
 			$command .= "</dt>\n<dd>";
 			print OUTPUT $command;
 	} elsif ($object eq 'Paragraph') {
-		my $line = html_output_line($node);
+		my $line = html_format_line($node);
 
 		print OUTPUT html_opening_nl($node).html_opening_p($node).$line.html_closing_p($node).html_closing_nl($node);
 	} else {
@@ -586,13 +673,13 @@ sub html_close {
 
 
 # -------------------------------------------------------------------------------------------------
-# Process a line of text from the file, parsing any in-line commands and formatting it for the
-# current file type.
+# Process a line of text from the file, parsing any in-line commands and formatting it for
+# HTML output.
 #
 # Param: $node			The node whose contents is to be processed.
 # Return: 			The formatted line.
 
-sub html_output_line
+sub html_format_line
 {
 	my ($node) = @_;
 
@@ -620,11 +707,13 @@ sub html_output_line
 		$line = "$`<a href=\"#$1\">$2</a>$'";
 	}
 
-	# Sort out any &msep; entities into something that's valid HTML.
+	# Sort out any non-standard entities into something that's valid HTML.
 
-	while ($line =~ /&msep;/) {
-		$line = "$`&rarr;$'";
-	}
+	my %entities = (
+		"msep",		"&rarr;"
+	);
+
+	$line = substitute_entities($line, %entities);
 
 	# Remove any trailing whitespace from the line
 
@@ -710,6 +799,26 @@ sub html_closing_p
 	my ($node) = @_;
 
 	return (node_is($node->getParent, 'CodeBlock')) ? "" : "</p>";
+}
+
+
+# -------------------------------------------------------------------------------------------------
+# Replace any entities (of the form &...;) in the string with substitutions from the supplied
+# list.  Unknown entities (ie. those not in the supplied hash) are left intact.
+
+sub substitute_entities
+{
+	my ($line, %entities) = @_;
+
+	foreach my $entity (keys %entities) {
+		my $sub = $entities{$entity};
+
+		while ($line =~ /&$entity;/) {
+			$line = $`.$sub.$';
+		}
+	}
+
+	return $line;
 }
 
 
