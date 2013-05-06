@@ -390,24 +390,14 @@ sub strong_open
 	} elsif ($object eq 'Subhead') {
 		print OUTPUT "{fh2:".get_value($node, 'title')."}\n\n";
 	} elsif ($object eq 'List') {
-#		if (lc($node->{'type'}) eq 'num') {
-#			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
-#		} elsif (lc($node->{'type'}) eq 'upper') {
-#			print OUTPUT html_opening_nl($node)."<ol type=\"A\">";
-#		} elsif (lc($node->{'type'}) eq 'lower') {
-#			print OUTPUT html_opening_nl($node)."<ol type=\"a\">";
-#		} else {
-#			print OUTPUT html_opening_nl($node)."<ul>";
-#		}
-
 		set_value($node, 'indent', 1);
 		print OUTPUT "#Indent ".strong_indent($node)."\n";
 	} elsif ($object eq 'ListItem') {
-		if ($parent->{'type'} == LIST_NUMERIC) {
+		if (get_value($parent, 'type') == LIST_NUMERIC) {
 			print OUTPUT ($node->getIndex + 1).".";
-		} elsif ($parent->{'type'} == LIST_UPPER) {
+		} elsif (get_value($parent, 'type') == LIST_UPPER) {
 			print OUTPUT sprintf ("%c)", 65 + $node->getIndex);
-		} elsif ($parent->{'type'} == LIST_LOWER) {
+		} elsif (get_value($parent, 'type') == LIST_LOWER) {
 			print OUTPUT sprintf ("%c)", 97 + $node->getIndex);
 		} else {
 			print OUTPUT "\x8f";
