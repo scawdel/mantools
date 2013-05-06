@@ -172,6 +172,20 @@ while (defined(my $line = <INPUT>)) {
 				# If this is a nested list, close the parent list item before nesting.
 				$current_node = $current_node->getParent;
 			}
+			if (!defined($params{'type'})) {
+				$params{'type'} = "";
+			}
+			$params{'type'} = lc($params{'type'});
+			if ($params{'type'} eq 'num') {
+				$params{'type'} = LIST_NUMERIC;
+			} elsif ($params{'type'} eq 'upper') {
+				$params{'type'} = LIST_UPPER;
+			} elsif ($params{'type'} eq 'lower') {
+				$params{'type'} = LIST_LOWER;
+			} else {
+				$params{'type'} = LIST_BULLET;
+			}
+
 			$current_node = Tree::Simple->new({object => 'List', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/list') {
 			if (node_is($current_node, 'ListItem')) {
@@ -372,7 +386,7 @@ sub strong_open
 		print OUTPUT "#Line\n";
 
 		set_value($node, 'indent', 2);
-		print OUTPUT "#Indent ".get_value($node, 'indent')."\n";
+		print OUTPUT "#Indent ".strong_indent($node)."\n";
 	} elsif ($object eq 'Subhead') {
 		print OUTPUT "{fh2:".get_value($node, 'title')."}\n\n";
 	} elsif ($object eq 'List') {
@@ -385,8 +399,19 @@ sub strong_open
 #		} else {
 #			print OUTPUT html_opening_nl($node)."<ul>";
 #		}
+
+		set_value($node, 'indent', 1);
+		print OUTPUT "#Indent ".strong_indent($node)."\n";
 	} elsif ($object eq 'ListItem') {
-#		print OUTPUT html_opening_nl($node)."<li>";
+		if ($parent->{'type'} == LIST_NUMERIC) {
+			print OUTPUT ($node->getIndex + 1).".";
+		} elsif ($parent->{'type'} == LIST_UPPER) {
+			print OUTPUT sprintf ("%c)", 65 + $node->getIndex);
+		} elsif ($parent->{'type'} == LIST_LOWER) {
+			print OUTPUT sprintf ("%c)", 97 + $node->getIndex);
+		} else {
+			print OUTPUT "\x8f";
+		}
 	} elsif ($object eq 'CodeBlock') {
 #		print OUTPUT html_opening_nl($node)."<pre>";
 	} elsif ($object eq 'Box') {
@@ -413,7 +438,13 @@ sub strong_open
 	} elsif ($object eq 'Paragraph') {
 		my $line = strong_format_line($node);
 
-		print OUTPUT $line."\n";
+		if (node_is($parent, 'ListItem')) {
+			print OUTPUT "\t";
+		}
+		print OUTPUT $line;
+		if (!node_is($parent, 'ListItem')) {
+			print OUTPUT "\n";
+		}
 
 #		print OUTPUT html_opening_nl($node).html_opening_p($node).$line.html_closing_p($node).html_closing_nl($node);
 	} else {
@@ -473,11 +504,7 @@ sub strong_close
 
 		#close(OUTPUT);
 	} elsif ($object eq 'List') {
-#		if (lc($value->{'type'}) eq 'num' || lc($value->{'type'}) eq 'upper' || lc($value->{'type'}) eq 'lower') {
-#			print OUTPUT "</ol>\n";
-#		} else {
-#			print OUTPUT "</ul>\n";
-#		}
+		print OUTPUT "#Indent\n";
 	} elsif ($object eq 'ListItem') {
 #		print OUTPUT "</li>".html_closing_nl($node);
 	} elsif ($object eq 'CodeBlock') {
@@ -501,6 +528,7 @@ sub strong_format_line
 {
 	my ($node) = @_;
 
+	my $parent = $node->getParent;
 	my $line = get_value($node, 'content');
 
 	$line =~ s/<cite>(.*?)<\/cite>/{f\/:$1}/g;		# Citation - no effect
@@ -577,6 +605,30 @@ sub strong_format_line
 
 
 
+# -------------------------------------------------------------------------------------------------
+# Scan back up the tree and calculate the required indent value for the current node in StrongHelp
+# output mode.
+#
+# Param: $node			The node to process
+# Return			The required #Indent value.
+
+sub strong_indent
+{
+	my ($node) = @_;
+	my $indent = 0;
+
+	while ($node ne Tree::Simple->ROOT) {
+		if (defined(get_value($node, 'indent'))) {
+			$indent += get_value($node, 'indent');
+		}
+		$node = $node->getParent;
+	}
+
+	return $indent;
+}
+
+
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -597,11 +649,11 @@ sub html_open
 	} elsif ($object eq 'Subhead') {
 		print OUTPUT "\n<h3>".get_value($node, 'title')."</h3>\n";
 	} elsif ($object eq 'List') {
-		if (lc($node->{'type'}) eq 'num') {
+		if ($node->{'type'} == LIST_NUMERIC) {
 			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
-		} elsif (lc($node->{'type'}) eq 'upper') {
+		} elsif ($node->{'type'} == LIST_UPPER) {
 			print OUTPUT html_opening_nl($node)."<ol type=\"A\">";
-		} elsif (lc($node->{'type'}) eq 'lower') {
+		} elsif ($node->{'type'} == LIST_LOWER) {
 			print OUTPUT html_opening_nl($node)."<ol type=\"a\">";
 		} else {
 			print OUTPUT html_opening_nl($node)."<ul>";
@@ -655,10 +707,10 @@ sub html_close {
 	if ($object eq 'Chapter') {
 		print OUTPUT "</div>\n";
 	} elsif ($object eq 'List') {
-		if (lc($value->{'type'}) eq 'num' || lc($value->{'type'}) eq 'upper' || lc($value->{'type'}) eq 'lower') {
-			print OUTPUT "</ol>\n";
-		} else {
+		if ($value->{'type'} == LIST_BULLET) {
 			print OUTPUT "</ul>\n";
+		} else {
+			print OUTPUT "</ol>\n";
 		}
 	} elsif ($object eq 'ListItem') {
 		print OUTPUT "</li>".html_closing_nl($node);
