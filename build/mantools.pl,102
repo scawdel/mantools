@@ -367,7 +367,7 @@ sub strong_open
 {
 	my ($node) = @_;
 	my $parent = $node->getParent;
-	my $object = $node->getNodeValue()->{'object'};
+	my $object = get_value($node, 'object');
 
 	if ($object eq 'Literal') {
 		#open(OUTPUT, ">".$outfile.get_value($node, 'file')) || die "Can't open output file: $!\n";
@@ -434,7 +434,7 @@ sub strong_open
 			print OUTPUT "\t";
 		}
 		print OUTPUT $line;
-		if (!node_is($parent, 'ListItem')) {
+		if (!node_is($parent, 'ListItem', 'CodeBlock')) {
 			print OUTPUT "\n";
 		}
 
@@ -454,8 +454,8 @@ sub strong_close
 {
 	my ($node) = @_;
 
-	my $value = $node->getNodeValue();
-	my $object = $value->{'object'};
+	my $parent = $node->getParent;
+	my $object = get_value($node, 'object');
 
 	if ($object eq 'Chapter') {
 		my $previous = "";
@@ -497,6 +497,9 @@ sub strong_close
 		#close(OUTPUT);
 	} elsif ($object eq 'List') {
 		print OUTPUT "#Indent\n";
+		if (!node_is($parent, 'List')) {
+			print OUTPUT "\n";
+		}
 	} elsif ($object eq 'ListItem') {
 #		print OUTPUT "</li>".html_closing_nl($node);
 	} elsif ($object eq 'CodeBlock') {
@@ -568,28 +571,6 @@ sub strong_format_line
 	);
 
 	$line = substitute_entities($line, %entities);
-
-	# If we are in bullet mode, insert a tab after any bullet (or at the start of the line).
-
-#	if ($list_type != 0) {
-#		if ($line =~ /^<li>/) {
-#			my $indent_string = "";
-
-#			if ($list_type == LIST_BULLET) {
-#				$indent_string = '';
-#			} elsif ($list_type == LIST_NUMERIC) {
-#				$indent_string = $$list_value++.".";
-#			} elsif ($list_type == LIST_UPPER) {
-#				$indent_string = sprintf ("%c)", 64 + $$list_value++);
-#			} elsif ($list_type == LIST_LOWER) {
-#				$indent_string = sprintf ("%c)", 96 + $$list_value++);
-#			}
-
-#			$line =~ s/^<li>\s*/$indent_string."\t"/e;
-#		} else {
-#			$line = "\t".$line;
-#		}
-#	}
 
 	# Output the line of text.
 
