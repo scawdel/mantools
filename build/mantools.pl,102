@@ -407,12 +407,22 @@ sub strong_open
 		print OUTPUT "#Indent ".strong_indent($node)."\n";
 		print OUTPUT "#FCode\n";
 	} elsif ($object eq 'Box') {
-#		print OUTPUT html_opening_nl($node)."<div style=\"margin-left: 3em; padding: 0 0 0 52px; border-left: 5px solid gray; overflow: hidden;\">";
-#		if (lc(get_value($node, 'type')) eq 'info') {
-#			print OUTPUT "<img src=\"info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
-#		} elsif (lc(get_value($node, 'type')) eq 'warning') {
-#			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
-#		}
+		my $type = get_value($node, 'type');
+		if (defined($type)) {
+			$type = lc($type);
+		} else {
+			$type = "";
+		}
+
+		if ($type eq 'info' || $type eq 'warning') {
+			set_value($node, 'indent', 5);
+			print OUTPUT "#Indent ".strong_indent($node)."\n";
+			print OUTPUT "#Sprite ".((strong_indent($parent)*16).",f ".get_value($node, 'type')."\n");
+			print OUTPUT "#F/\n";
+		} else {
+			print OUTPUT "#Indent ".strong_indent($node)."\n";
+			print OUTPUT "#F*\n";
+		}
 	} elsif ($object eq 'Definition') {
 #		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
 	} elsif ($object eq 'ComDef') {
@@ -434,7 +444,7 @@ sub strong_open
 			print OUTPUT "\t";
 		}
 		print OUTPUT $line;
-		if (!node_is($parent, 'ListItem', 'CodeBlock')) {
+		if (!node_is($parent, 'ListItem', 'CodeBlock') && !last_node($node)) {
 			print OUTPUT "\n";
 		}
 
@@ -490,6 +500,7 @@ sub strong_close
 			}
 		}
 
+		print OUTPUT "\n";
 		print OUTPUT "#Indent\n";
 		print OUTPUT "#Line\n";
 		print OUTPUT $previous . (($previous ne "" && $next ne "") ? "  " : "") . $next . "\n";
@@ -506,7 +517,9 @@ sub strong_close
 		print OUTPUT "#F\n";
 		print OUTPUT "#Indent\n";
 	} elsif ($object eq 'Box') {
-#		print OUTPUT "</div>".html_closing_nl($node);
+		print OUTPUT "#F\n";
+		print OUTPUT "#Indent\n";
+		print OUTPUT "\n";
 	} elsif ($object eq 'Definition' || $object eq 'ComDef') {
 #		print OUTPUT "</dd></dl>".html_closing_nl($node);
 	}
