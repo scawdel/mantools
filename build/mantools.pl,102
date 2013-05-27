@@ -339,6 +339,136 @@ sub text_close
 
 
 # -------------------------------------------------------------------------------------------------
+# Process a line of text from the file, parsing any in-line commands and formatting it for
+# text format output.
+#
+# Param: $node			The node whose contents is to be processed.
+# Return: 			The formatted line.
+
+sub text_format_line
+{
+	my ($node) = @_;
+
+	my $parent = $node->getParent;
+	my $line = get_value($node, 'content');
+
+	#my ($indent, $spacing, $wrapping, $list_type, $list_value, $bar, $prefix) = @_;
+
+	my $first = FALSE;
+
+	$line =~ s/<cite>(.*?)<\/cite>/$1/g;		# Citation - no effect
+	$line =~ s/<code>(.*?)<\/code>/"$1"/g;		# Inline code - enclose in ""
+	$line =~ s/<command>(.*?)<\/command>/"$1"/g;	# Command line - no effect
+	$line =~ s/<em>(.*?)<\/em>/uc $1/eg;		# Emphasis - To Upper
+	$line =~ s/<entry>(.*?)<\/entry>/"$1"/g;	# User entry - enclose in ""
+	$line =~ s/<file>(.*?)<\/file>/$1/g;		# Filename - no effect
+	$line =~ s/<icon>(.*?)<\/icon>/'$1'/g;		# Icon labels - enclose in ''
+	$line =~ s/<key>(.*?)<\/key>/ucfirst $1/eg;	# Key names - initial capital
+	$line =~ s/<menu>(.*?)<\/menu>/'$1'/g;		# Menu entries - enclose in ''
+	$line =~ s/<mouse>(.*?)<\/mouse>/ucfirst $1/eg;	# Mouse buttons - initial capital
+	$line =~ s/<param>(.*?)<\/param>/$1/g;		# Command parameter - no effect
+	$line =~ s/<strong>(.*?)<\/strong>/uc $1/eg;	# Strong Emphasis - To Upper
+	$line =~ s/<window>(.*?)<\/window>/$1/g;	# Window names - no effect
+
+	# Hyperlinks are unsupported, so just remove them.
+
+	$line =~ s/<link.*?>(.*?)<\/link>/$1/g;
+
+	# Finally, expand all the entities out.
+
+	while ($line =~ /&(.*?);/) {
+		$line = "$`$entities{$1}$'";
+	}
+
+	$line =~ s/\e/&/g; # Restore the &s after the entities have gone.
+
+	# Indent the first line, using a bullet or number if necessary.
+
+	my $current_line = "";
+
+	if ($line =~ /^<li>/) {
+		if ($list_type != LIST_NONE) {
+			if ($list_type == LIST_BULLET) {
+				$current_line = " " x ($indent-2)."* ";
+			} elsif ($list_type == LIST_NUMERIC) {
+				$current_line = " " x ($indent-4).sprintf ("%2d. ", $$list_value++);
+				$first = TRUE; # Don't double-space the trailing dot...
+			} elsif ($list_type == LIST_UPPER) {
+				$current_line = " " x ($indent-4).sprintf ("%2c) ", 64 + $$list_value++);
+			} elsif ($list_type == LIST_LOWER) {
+				$current_line = " " x ($indent-4).sprintf ("%2c) ", 96 + $$list_value++);
+			}
+		} else {
+			$current_line = " " x ($indent);
+		}
+
+		$line =~ s/^<li>\s*//;
+	} else {
+		$current_line = " " x $indent;
+	}
+
+	if ($bar != -1 && $bar <= $indent) {
+		substr($current_line, $bar, 2 + length($prefix)) = '| '.$prefix;
+	}
+
+	# Perform the linewrap on the string, indenting as required.
+
+	$line .= " ";
+
+	my $word = "";
+	my $space = "";
+
+	my $new_line = "";
+	my $next_space = " ";
+	chop($current_line); # Assumes that the last character of indent is space, replaced by one below.
+
+	while ($line ne "") {
+		$line =~ /( +)/;
+		$word = $`;
+
+		if ($wrapping == TRUE) {
+			$space = ' ';
+		} else {
+			$space = $next_space;
+			$next_space = $1;
+		}
+
+		$line = $';
+
+		if ($wrapping == TRUE && $space eq ' ' && $current_line =~ /\.$/ && $word =~ /^[A-Z]/ && !$first) {
+			$space = '  '; # Double-space after '.' if the next letter is upper-case.
+		}
+
+		if (length ($current_line.$space.$word) <= 77) {
+			$current_line .= $space.$word;
+		} else {
+			$new_line .= $current_line."\n";
+			$current_line = (' ' x $indent).$word;
+
+			if ($bar != -1 && $bar <= $indent) {
+				substr($current_line, $bar, 1) = '|';
+			}
+		}
+
+		$first = FALSE;
+	}
+
+	$line = $new_line.$current_line;
+
+	$line =~ s/\xa0/ /g; # Replace hard spaces with spaces once linewrap is done.
+
+	# Remove any trailing whitespace from the line and then add in newlines
+	# for the required linespacing.
+
+	$line =~ s/\s*$//;
+	$line .= "\n" x $spacing;
+
+	return $line."\n";
+}
+
+
+
+# -------------------------------------------------------------------------------------------------
 # Scan back up the tree and calculate the required indent string for lines in the current node.
 
 sub text_indent
@@ -988,4 +1118,3 @@ sub parse_tag
 
 	return %attributes;
 }
-
