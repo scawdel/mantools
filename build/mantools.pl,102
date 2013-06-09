@@ -297,9 +297,9 @@ sub text_open
 #			$command .= "</dt>\n<dd>";
 #			print OUTPUT $command;
 	} elsif ($object eq 'Paragraph') {
-#		my $line = html_output_line($node);
+		my $line = text_format_line($node);
 
-#		print OUTPUT html_opening_nl($node).html_opening_p($node).$line.html_closing_p($node).html_closing_nl($node);
+		print OUTPUT $line."\n";
 	} else {
 		print "Node Type '".$object."'\n";
 	}
@@ -376,40 +376,48 @@ sub text_format_line
 
 	# Finally, expand all the entities out.
 
-	while ($line =~ /&(.*?);/) {
-		$line = "$`$entities{$1}$'";
-	}
+	my %entities = (
+		"lt",		"<",
+		"gt",		">",
+		"quot",		"\"",
+		"ndash",	"--",
+		"nbsp",		"\xa0",
+		"msep",		"--",
+		"amp",		"&"
+	);
 
-	$line =~ s/\e/&/g; # Restore the &s after the entities have gone.
+	$line = substitute_entities($line, %entities);
 
 	# Indent the first line, using a bullet or number if necessary.
 
-	my $current_line = "";
+	my $current_line = text_indent($node);
 
-	if ($line =~ /^<li>/) {
-		if ($list_type != LIST_NONE) {
-			if ($list_type == LIST_BULLET) {
-				$current_line = " " x ($indent-2)."* ";
-			} elsif ($list_type == LIST_NUMERIC) {
-				$current_line = " " x ($indent-4).sprintf ("%2d. ", $$list_value++);
-				$first = TRUE; # Don't double-space the trailing dot...
-			} elsif ($list_type == LIST_UPPER) {
-				$current_line = " " x ($indent-4).sprintf ("%2c) ", 64 + $$list_value++);
-			} elsif ($list_type == LIST_LOWER) {
-				$current_line = " " x ($indent-4).sprintf ("%2c) ", 96 + $$list_value++);
-			}
-		} else {
-			$current_line = " " x ($indent);
-		}
+	my $wrapping = text_wrapping($node);
 
-		$line =~ s/^<li>\s*//;
-	} else {
-		$current_line = " " x $indent;
-	}
+#	if ($line =~ /^<li>/) {
+#		if ($list_type != LIST_NONE) {
+#			if ($list_type == LIST_BULLET) {
+#				$current_line = " " x ($indent-2)."* ";
+#			} elsif ($list_type == LIST_NUMERIC) {
+#				$current_line = " " x ($indent-4).sprintf ("%2d. ", $$list_value++);
+#				$first = TRUE; # Don't double-space the trailing dot...
+#			} elsif ($list_type == LIST_UPPER) {
+#				$current_line = " " x ($indent-4).sprintf ("%2c) ", 64 + $$list_value++);
+#			} elsif ($list_type == LIST_LOWER) {
+#				$current_line = " " x ($indent-4).sprintf ("%2c) ", 96 + $$list_value++);
+#			}
+#		} else {
+#			$current_line = " " x ($indent);
+#		}
 
-	if ($bar != -1 && $bar <= $indent) {
-		substr($current_line, $bar, 2 + length($prefix)) = '| '.$prefix;
-	}
+#		$line =~ s/^<li>\s*//;
+#	} else {
+#		$current_line = " " x $indent;
+#	}
+
+#	if ($bar != -1 && $bar <= $indent) {
+#		substr($current_line, $bar, 2 + length($prefix)) = '| '.$prefix;
+#	}
 
 	# Perform the linewrap on the string, indenting as required.
 
@@ -443,11 +451,11 @@ sub text_format_line
 			$current_line .= $space.$word;
 		} else {
 			$new_line .= $current_line."\n";
-			$current_line = (' ' x $indent).$word;
+			$current_line = text_indent($node).$word;
 
-			if ($bar != -1 && $bar <= $indent) {
-				substr($current_line, $bar, 1) = '|';
-			}
+#			if ($bar != -1 && $bar <= $indent) {
+#				substr($current_line, $bar, 1) = '|';
+#			}
 		}
 
 		$first = FALSE;
@@ -461,7 +469,7 @@ sub text_format_line
 	# for the required linespacing.
 
 	$line =~ s/\s*$//;
-	$line .= "\n" x $spacing;
+#	$line .= "\n" x $spacing;
 
 	return $line."\n";
 }
@@ -470,6 +478,9 @@ sub text_format_line
 
 # -------------------------------------------------------------------------------------------------
 # Scan back up the tree and calculate the required indent string for lines in the current node.
+#
+# Param: $node			The node to process.
+# Return:			The string to use for indent.
 
 sub text_indent
 {
@@ -486,6 +497,27 @@ sub text_indent
 	return " " x $indent;
 }
 
+
+# -------------------------------------------------------------------------------------------------
+# Scan back up the tree and identify if the current node's content should be line-wrapped.
+#
+# Param: $node			The node to process.
+# Return:			TRUE if the content should be wrapped; else FALSE.
+
+sub text_wrapping
+{
+	my ($node) = @_;
+	my $wrap = TRUE;
+
+	while ($node ne Tree::Simple->ROOT) {
+		if (node_is($node, 'CodeBlock')) {
+			$wrap = FALSE;
+		}
+		$node = $node->getParent;
+	}
+
+	return $wrap;
+}
 
 
 # -------------------------------------------------------------------------------------------------
