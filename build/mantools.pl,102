@@ -262,6 +262,16 @@ sub text_open
 		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
 		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n\n";
 	} elsif ($object eq 'List') {
+		if (get_value($parent, 'type') == LIST_BULLET) {
+			set_value($node, 'indent', 2);
+		} else {
+			set_value($node, 'indent', 4);
+		}
+	} elsif ($object eq 'ListItem') {
+		set_value($node, 'firstline', TRUE);
+
+
+
 #		if (lc($node->{'type'}) eq 'num') {
 #			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
 #		} elsif (lc($node->{'type'}) eq 'upper') {
@@ -485,16 +495,16 @@ sub text_format_line
 sub text_indent
 {
 	my ($node) = @_;
-	my $indent = 0;
+	my $indent = "";
 
 	while ($node ne Tree::Simple->ROOT) {
 		if (defined(get_value($node, 'indent'))) {
-			$indent += get_value($node, 'indent');
+			$indent = " " x get_value($node, 'indent') + $indent;
 		}
 		$node = $node->getParent;
 	}
 
-	return " " x $indent;
+	return $indent;
 }
 
 
