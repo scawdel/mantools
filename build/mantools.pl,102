@@ -262,27 +262,21 @@ sub text_open
 		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
 		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n\n";
 	} elsif ($object eq 'List') {
-		if (get_value($parent, 'type') == LIST_BULLET) {
+		if (get_value($node, 'type') == LIST_BULLET) {
 			set_value($node, 'indent', 2);
 		} else {
 			set_value($node, 'indent', 4);
 		}
 	} elsif ($object eq 'ListItem') {
-		set_value($node, 'firstline', TRUE);
-
-
-
-#		if (lc($node->{'type'}) eq 'num') {
-#			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
-#		} elsif (lc($node->{'type'}) eq 'upper') {
-#			print OUTPUT html_opening_nl($node)."<ol type=\"A\">";
-#		} elsif (lc($node->{'type'}) eq 'lower') {
-#			print OUTPUT html_opening_nl($node)."<ol type=\"a\">";
-#		} else {
-#			print OUTPUT html_opening_nl($node)."<ul>";
-#		}
-	} elsif ($object eq 'ListItem') {
-#		print OUTPUT html_opening_nl($node)."<li>";
+		if (get_value($parent, 'type') == LIST_NUMERIC) {
+			set_value($node, 'firstline', sprintf("%2d.", $node->getIndex + 1));
+		} elsif (get_value($parent, 'type') == LIST_UPPER) {
+			set_value($node, 'firstline', sprintf("%2c) ", $node->getIndex + 65));
+		} elsif (get_value($parent, 'type') == LIST_LOWER) {
+			set_value($node, 'firstline', sprintf("%2c) ", $node->getIndex + 96));
+		} else {
+			set_value($node, 'firstline', "*");
+		}
 	} elsif ($object eq 'CodeBlock') {
 #		print OUTPUT html_opening_nl($node)."<pre>";
 	} elsif ($object eq 'Box') {
@@ -496,11 +490,21 @@ sub text_indent
 {
 	my ($node) = @_;
 	my $indent = "";
+	my $indent_text = "";
 
 	while ($node ne Tree::Simple->ROOT) {
-		if (defined(get_value($node, 'indent'))) {
-			$indent = " " x get_value($node, 'indent') + $indent;
+		if (node_is($node, 'ListItem')) {
+			$indent_text = get_value($node, 'firstline');
+			if ($indent_text ne "") {
+				set_value($node, 'firstline', "");
+			}
+		} elsif (node_is($node, 'List')) {
+			$indent = $indent_text . " " x (get_value($node, 'indent') - length($indent_text)) . $indent;
+			$indent_text = "";
+		} elsif (defined(get_value($node, 'indent'))) {
+			$indent = " " x get_value($node, 'indent') . $indent;
 		}
+
 		$node = $node->getParent;
 	}
 
