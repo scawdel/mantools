@@ -402,27 +402,6 @@ sub text_format_line
 
 	my $wrapping = text_wrapping($node);
 
-#	if ($line =~ /^<li>/) {
-#		if ($list_type != LIST_NONE) {
-#			if ($list_type == LIST_BULLET) {
-#				$current_line = " " x ($indent-2)."* ";
-#			} elsif ($list_type == LIST_NUMERIC) {
-#				$current_line = " " x ($indent-4).sprintf ("%2d. ", $$list_value++);
-#				$first = TRUE; # Don't double-space the trailing dot...
-#			} elsif ($list_type == LIST_UPPER) {
-#				$current_line = " " x ($indent-4).sprintf ("%2c) ", 64 + $$list_value++);
-#			} elsif ($list_type == LIST_LOWER) {
-#				$current_line = " " x ($indent-4).sprintf ("%2c) ", 96 + $$list_value++);
-#			}
-#		} else {
-#			$current_line = " " x ($indent);
-#		}
-
-#		$line =~ s/^<li>\s*//;
-#	} else {
-#		$current_line = " " x $indent;
-#	}
-
 #	if ($bar != -1 && $bar <= $indent) {
 #		substr($current_line, $bar, 2 + length($prefix)) = '| '.$prefix;
 #	}
