@@ -280,12 +280,15 @@ sub text_open
 	} elsif ($object eq 'CodeBlock') {
 #		print OUTPUT html_opening_nl($node)."<pre>";
 	} elsif ($object eq 'Box') {
-#		print OUTPUT html_opening_nl($node)."<div style=\"margin-left: 3em; padding: 0 0 0 52px; border-left: 5px solid gray; overflow: hidden;\">";
-#		if (lc(get_value($node, 'type')) eq 'info') {
-#			print OUTPUT "<img src=\"info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
-#		} elsif (lc(get_value($node, 'type')) eq 'warning') {
-#			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
-#		}
+		if (lc(get_value($node, 'type')) eq 'info') {
+			set_value($node, 'firstline', "(i)");
+			set_value($node, 'indent', 6);
+		} elsif (lc(get_value($node, 'type')) eq 'warning') {
+			set_value($node, 'firstline', "(!)");
+			set_value($node, 'indent', 6);
+		} else {
+			set_value($node, 'indent', 2);
+		}
 	} elsif ($object eq 'Definition') {
 #		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
 	} elsif ($object eq 'ComDef') {
@@ -462,7 +465,6 @@ sub text_format_line
 }
 
 
-
 # -------------------------------------------------------------------------------------------------
 # Scan back up the tree and calculate the required indent string for lines in the current node.
 #
@@ -484,6 +486,14 @@ sub text_indent
 		} elsif (node_is($node, 'List')) {
 			$indent = $indent_text . " " x (get_value($node, 'indent') - length($indent_text)) . $indent;
 			$indent_text = "";
+		} elsif (node_is($node, 'Box')) {
+			$indent_text = "| ";
+			if (defined(get_value($node, 'firstline')) && get_value($node, 'firstline') ne "") {
+				$indent_text .= get_value($node, 'firstline');
+				set_value($node, 'firstline', "");
+			}
+
+			$indent = $indent_text . " " x (get_value($node, 'indent') - length($indent_text)) . $indent;
 		} elsif (defined(get_value($node, 'indent'))) {
 			$indent = " " x get_value($node, 'indent') . $indent;
 		}
