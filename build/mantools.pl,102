@@ -306,7 +306,8 @@ sub text_open
 	} elsif ($object eq 'Paragraph') {
 		my $line = text_format_line($node);
 
-		print OUTPUT $line."\n";
+		print OUTPUT $line;
+		print OUTPUT text_linefeed($node, TRUE);
 	} else {
 		print "Node Type '".$object."'\n";
 	}
@@ -466,16 +467,48 @@ sub text_format_line
 
 
 # -------------------------------------------------------------------------------------------------
+# Return a linefeed string for the current node.
+#
+# Param: $node			The node to process.
+# Param: $closing		Optional: TRUE if the closing linefeed of a block; defaults to
+#				FALSE.
+# Return:			The string to use for linefeed.
+
+
+sub text_linefeed
+{
+	my ($node, $closing) = @_;
+
+	if (!defined($closing)) {
+		$closing = FALSE;
+	}
+
+	my $indent = text_indent($node, $closing);
+	$indent =~ s/\s+$//;
+
+	return $indent . "\n";
+}
+
+
+# -------------------------------------------------------------------------------------------------
 # Scan back up the tree and calculate the required indent string for lines in the current node.
 #
 # Param: $node			The node to process.
+# Param: $closing		Optional: TRUE if the closing indent of a block; defaults to
+#				FALSE.
 # Return:			The string to use for indent.
 
 sub text_indent
 {
-	my ($node) = @_;
+	my ($node, $closing) = @_;
+
+	if (!defined($closing)) {
+		$closing = FALSE;
+	}
+
 	my $indent = "";
 	my $indent_text = "";
+	my $last_node = last_node($node);
 
 	while ($node ne Tree::Simple->ROOT) {
 		if (node_is($node, 'ListItem')) {
@@ -486,7 +519,7 @@ sub text_indent
 		} elsif (node_is($node, 'List')) {
 			$indent = $indent_text . " " x (get_value($node, 'indent') - length($indent_text)) . $indent;
 			$indent_text = "";
-		} elsif (node_is($node, 'Box')) {
+		} elsif (node_is($node, 'Box') && (!$closing || !$last_node)) {
 			$indent_text = "| ";
 			if (defined(get_value($node, 'firstline')) && get_value($node, 'firstline') ne "") {
 				$indent_text .= get_value($node, 'firstline');
