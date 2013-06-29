@@ -408,10 +408,6 @@ sub text_format_line
 
 	my $wrapping = text_wrapping($node);
 
-#	if ($bar != -1 && $bar <= $indent) {
-#		substr($current_line, $bar, 2 + length($prefix)) = '| '.$prefix;
-#	}
-
 	# Perform the linewrap on the string, indenting as required.
 
 	$line .= " ";
@@ -445,10 +441,6 @@ sub text_format_line
 		} else {
 			$new_line .= $current_line."\n";
 			$current_line = text_indent($node).$word;
-
-#			if ($bar != -1 && $bar <= $indent) {
-#				substr($current_line, $bar, 1) = '|';
-#			}
 		}
 
 		$first = FALSE;
