@@ -256,11 +256,13 @@ sub text_open
 		print OUTPUT get_value($node, 'content');
 	} elsif ($object eq 'Chapter') {
 		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
-		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n\n";
+		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n";
+		print OUTPUT text_linefeed($node, TRUE);
 		set_value($node, 'indent', 2);
 	} elsif ($object eq 'Subhead') {
 		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
-		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n\n";
+		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n";
+		print OUTPUT text_linefeed($node, TRUE);
 	} elsif ($object eq 'List') {
 		if (get_value($node, 'type') == LIST_BULLET) {
 			set_value($node, 'indent', 2);
