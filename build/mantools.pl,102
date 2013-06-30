@@ -255,11 +255,14 @@ sub text_open
 	if ($object eq 'Literal') {
 		print OUTPUT get_value($node, 'content');
 	} elsif ($object eq 'Chapter') {
+		print OUTPUT text_linefeed($node);
+		print OUTPUT text_linefeed($node);
 		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
 		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n";
 		print OUTPUT text_linefeed($node, TRUE);
 		set_value($node, 'indent', 2);
 	} elsif ($object eq 'Subhead') {
+		print OUTPUT text_linefeed($node);
 		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
 		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n";
 		print OUTPUT text_linefeed($node, TRUE);
