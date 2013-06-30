@@ -280,7 +280,7 @@ sub text_open
 			set_value($node, 'firstline', "*");
 		}
 	} elsif ($object eq 'CodeBlock') {
-#		print OUTPUT html_opening_nl($node)."<pre>";
+		set_value($node, 'indent', 2);
 	} elsif ($object eq 'Box') {
 		if (lc(get_value($node, 'type')) eq 'info') {
 			set_value($node, 'firstline', "(i)");
@@ -309,7 +309,9 @@ sub text_open
 		my $line = text_format_line($node);
 
 		print OUTPUT $line;
-		print OUTPUT text_linefeed($node, TRUE);
+		if (text_linespace($node)) {
+			print OUTPUT text_linefeed($node, TRUE);
+		}
 	} else {
 		print "Node Type '".$object."'\n";
 	}
@@ -339,7 +341,9 @@ sub text_close
 	} elsif ($object eq 'ListItem') {
 #		print OUTPUT "</li>".html_closing_nl($node);
 	} elsif ($object eq 'CodeBlock') {
-#		print OUTPUT "</pre>".html_closing_nl($node);
+		if (text_linespace($node->getParent)) {
+			print OUTPUT text_linefeed($node, TRUE);
+		}
 	} elsif ($object eq 'Box') {
 #		print OUTPUT "</div>".html_closing_nl($node);
 	} elsif ($object eq 'Definition' || $object eq 'ComDef') {
@@ -551,6 +555,29 @@ sub text_wrapping
 	}
 
 	return $wrap;
+}
+
+
+# -------------------------------------------------------------------------------------------------
+# Scan back up the tree and identify if the current node's content should be followed by a
+# line space.
+#
+# Param: $node			The node to process.
+# Return:			TRUE if the content should be spaced; else FALSE.
+
+sub text_linespace
+{
+	my ($node) = @_;
+	my $space = TRUE;
+
+	while ($node ne Tree::Simple->ROOT) {
+		if (node_is($node, 'CodeBlock')) {
+			$space = FALSE;
+		}
+		$node = $node->getParent;
+	}
+
+	return $space;
 }
 
 
