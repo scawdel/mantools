@@ -336,11 +336,9 @@ sub text_close
 	if ($object eq 'Chapter') {
 #		print OUTPUT "</div>\n";
 	} elsif ($object eq 'List') {
-#		if (lc($value->{'type'}) eq 'num' || lc($value->{'type'}) eq 'upper' || lc($value->{'type'}) eq 'lower') {
-#			print OUTPUT "</ol>\n";
-#		} else {
-#			print OUTPUT "</ul>\n";
-#		}
+		if ((!defined(get_value($node, 'spacing')) || get_value($node, 'spacing') == 0) && text_linespace($node->getParent)) {
+			print OUTPUT text_linefeed($node, TRUE);
+		}
 	} elsif ($object eq 'ListItem') {
 #		print OUTPUT "</li>".html_closing_nl($node);
 	} elsif ($object eq 'CodeBlock') {
@@ -572,10 +570,17 @@ sub text_linespace
 {
 	my ($node) = @_;
 	my $space = TRUE;
+	my $first_list = TRUE;
+	my $last_item = last_node($node);
 
 	while ($node ne Tree::Simple->ROOT) {
 		if (node_is($node, 'CodeBlock')) {
 			$space = FALSE;
+		} elsif (node_is($node, 'List') && $first_list) {
+			$first_list = FALSE;
+			if (!defined(get_value($node, 'spacing')) || get_value($node, 'spacing') == 0) {
+				$space = FALSE;
+			}
 		}
 		$node = $node->getParent;
 	}
