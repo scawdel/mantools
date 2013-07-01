@@ -366,9 +366,6 @@ sub text_format_line
 
 	my $parent = $node->getParent;
 	my $line = get_value($node, 'content');
-
-	#my ($indent, $spacing, $wrapping, $list_type, $list_value, $bar, $prefix) = @_;
-
 	my $first = FALSE;
 
 	$line =~ s/<cite>(.*?)<\/cite>/$1/g;		# Citation - no effect
@@ -407,7 +404,7 @@ sub text_format_line
 
 	$line = substitute_entities($line, %entities);
 
-	# Indent the first line, using a bullet or number if necessary.
+	# Indent the first line and identify the wrapping mode.
 
 	my $current_line = text_indent($node);
 
@@ -455,11 +452,9 @@ sub text_format_line
 
 	$line =~ s/\xa0/ /g; # Replace hard spaces with spaces once linewrap is done.
 
-	# Remove any trailing whitespace from the line and then add in newlines
-	# for the required linespacing.
+	# Remove any trailing whitespace from the line.
 
 	$line =~ s/\s*$//;
-#	$line .= "\n" x $spacing;
 
 	return $line."\n";
 }
