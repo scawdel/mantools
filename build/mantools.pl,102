@@ -890,17 +890,17 @@ sub html_open
 	} elsif ($object eq 'Definition') {
 		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
 	} elsif ($object eq 'ComDef') {
-			my $command = html_opening_nl($node);
-			if (defined(get_value($node, 'target'))) {
-				$command .= "<dl><dt><b>".get_value($node, 'target')."</b>";
-			} else {
-				$command .= "<dl><dt><b>Command</b>";
-			}
-			if (defined(get_value($node, 'params'))) {
-				$command .= " <i>".get_value($node, 'params')."</i>";
-			}
-			$command .= "</dt>\n<dd>";
-			print OUTPUT $command;
+		my $command = html_opening_nl($node);
+		if (defined(get_value($node, 'target'))) {
+			$command .= "<dl><dt><b>".get_value($node, 'target')."</b>";
+		} else {
+			$command .= "<dl><dt><b>Command</b>";
+		}
+		if (defined(get_value($node, 'params'))) {
+			$command .= " <i>".get_value($node, 'params')."</i>";
+		}
+		$command .= "</dt>\n<dd>";
+		print OUTPUT $command;
 	} elsif ($object eq 'Paragraph') {
 		my $line = html_format_line($node);
 
