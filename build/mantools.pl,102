@@ -676,9 +676,7 @@ sub strong_open
 			print OUTPUT "\t";
 		}
 		print OUTPUT $line;
-		if (!node_is($parent, 'ListItem', 'CodeBlock') && !last_node($node)) {
-			print OUTPUT "\n";
-		}
+		print OUTPUT strong_closing_nl($node);
 	} else {
 		print "Node Type '".$object."'\n";
 	}
@@ -738,22 +736,20 @@ sub strong_close
 		#close(OUTPUT);
 	} elsif ($object eq 'List') {
 		print OUTPUT "#Indent\n";
-		if (!node_is($parent, 'List')) {
-			print OUTPUT "\n";
-		}
+		print OUTPUT strong_closing_nl($node);
 	} elsif ($object eq 'ListItem') {
 #		print OUTPUT "</li>".html_closing_nl($node);
 	} elsif ($object eq 'CodeBlock') {
 		print OUTPUT "#F\n";
 		print OUTPUT "#Indent\n";
-		print OUTPUT "\n";
+		print OUTPUT strong_closing_nl($node);
 	} elsif ($object eq 'Box') {
 		print OUTPUT "#F\n";
 		print OUTPUT "#Indent\n";
-		print OUTPUT "\n";
+		print OUTPUT strong_closing_nl($node);
 	} elsif ($object eq 'Definition' || $object eq 'ComDef') {
 		print OUTPUT "#Indent\n";
-		print OUTPUT "\n";
+		print OUTPUT strong_closing_nl($node);
 	}
 }
 
@@ -827,7 +823,6 @@ sub strong_format_line
 }
 
 
-
 # -------------------------------------------------------------------------------------------------
 # Scan back up the tree and calculate the required indent value for the current node in StrongHelp
 # output mode.
@@ -851,7 +846,23 @@ sub strong_indent
 }
 
 
+# -------------------------------------------------------------------------------------------------
+# Return a newline for trailing after a node.
+#
+# Param: $node			The node to process
+# Return			The required newline value.
 
+sub strong_closing_nl
+{
+	my ($node) = @_;
+	my $newline = "";
+
+	if (!node_is($node->getParent, 'List', 'ListItem', 'CodeBlock') && !last_node($node)) {
+		$newline = "\n";
+	}
+
+	return $newline;
+}
 
 
 # -------------------------------------------------------------------------------------------------
