@@ -298,17 +298,18 @@ sub text_open
 		print OUTPUT text_linefeed($node);
 		set_value($node, 'indent', 2);
 	} elsif ($object eq 'ComDef') {
-#			my $command = html_opening_nl($node);
-#			if (defined(get_value($node, 'target'))) {
-#				$command .= "<dl><dt><b>".get_value($node, 'target')."</b>";
-#			} else {
-#				$command .= "<dl><dt><b>Command</b>";
-#			}
-#			if (defined(get_value($node, 'params'))) {
-#				$command .= " <i>".get_value($node, 'params')."</i>";
-#			}
-#			$command .= "</dt>\n<dd>";
-#			print OUTPUT $command;
+		my $command = "";
+		if (defined(get_value($node, 'target'))) {
+			$command .= get_value($node, 'target');
+		} else {
+			$command .= "Command";
+		}
+		if (defined(get_value($node, 'params'))) {
+			$command .= " ".get_value($node, 'params');
+		}
+		print OUTPUT text_indent($node).$command."\n";
+		print OUTPUT text_linefeed($node);
+		set_value($node, 'indent', 2);
 	} elsif ($object eq 'Paragraph') {
 		print OUTPUT text_format_line($node);
 		if (text_linespace($node)) {
