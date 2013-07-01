@@ -679,8 +679,6 @@ sub strong_open
 		if (!node_is($parent, 'ListItem', 'CodeBlock') && !last_node($node)) {
 			print OUTPUT "\n";
 		}
-
-#		print OUTPUT html_opening_nl($node).html_opening_p($node).$line.html_closing_p($node).html_closing_nl($node);
 	} else {
 		print "Node Type '".$object."'\n";
 	}
