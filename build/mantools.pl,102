@@ -651,19 +651,24 @@ sub strong_open
 			print OUTPUT "#F*\n";
 		}
 	} elsif ($object eq 'Definition') {
-#		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
+		set_value($node, 'indent', 2);
+		print OUTPUT "{f*:".get_value($node, 'target')."}\n";
+		print OUTPUT "\n";
+		print OUTPUT "#Indent ".strong_indent($node)."\n";
 	} elsif ($object eq 'ComDef') {
-#			my $command = html_opening_nl($node);
-#			if (defined(get_value($node, 'target'))) {
-#				$command .= "<dl><dt><b>".get_value($node, 'target')."</b>";
-#			} else {
-#				$command .= "<dl><dt><b>Command</b>";
-#			}
-#			if (defined(get_value($node, 'params'))) {
-#				$command .= " <i>".get_value($node, 'params')."</i>";
-#			}
-#			$command .= "</dt>\n<dd>";
-#			print OUTPUT $command;
+		set_value($node, 'indent', 2);
+		my $command = "";
+		if (defined(get_value($node, 'target'))) {
+			$command .= "{f*:".get_value($node, 'target')."}";
+		} else {
+			$command .= "{f*:Command}";
+		}
+		if (defined(get_value($node, 'params'))) {
+			$command .= " {f*/:".get_value($node, 'params')."}";
+		}
+		print OUTPUT $command."\n";
+		print OUTPUT "\n";
+		print OUTPUT "#Indent ".strong_indent($node)."\n";
 	} elsif ($object eq 'Paragraph') {
 		my $line = strong_format_line($node);
 
@@ -748,7 +753,8 @@ sub strong_close
 		print OUTPUT "#Indent\n";
 		print OUTPUT "\n";
 	} elsif ($object eq 'Definition' || $object eq 'ComDef') {
-#		print OUTPUT "</dd></dl>".html_closing_nl($node);
+		print OUTPUT "#Indent\n";
+		print OUTPUT "\n";
 	}
 }
 
