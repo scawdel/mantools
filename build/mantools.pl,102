@@ -631,6 +631,7 @@ sub strong_open
 		}
 	} elsif ($object eq 'CodeBlock') {
 		set_value($node, 'indent', 2);
+		print OUTPUT "\n";
 		print OUTPUT "#Indent ".strong_indent($node)."\n";
 		print OUTPUT "#FCode\n";
 	} elsif ($object eq 'Box') {
