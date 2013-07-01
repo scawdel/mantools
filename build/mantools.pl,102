@@ -972,7 +972,7 @@ sub html_format_line
 
 	my $line = get_value($node, 'content');
 
-	# <cite>, <code>, <em> and <strong> just get left as-is.
+	# Any entities that are valid in HTML just get left as-is.
 
 	$line =~ s/<command>(.*?)<\/command>/<code>$1<\/code>/g;	# Inline code - enclose in ""
 	$line =~ s/<entry>(.*?)<\/entry>/<tt>$1<\/tt>/g;		# User entry
