@@ -294,7 +294,9 @@ sub text_open
 			set_value($node, 'indent', 2);
 		}
 	} elsif ($object eq 'Definition') {
-#		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
+		print OUTPUT text_indent($node).get_value($node, 'target')."\n";
+		print OUTPUT text_linefeed($node);
+		set_value($node, 'indent', 2);
 	} elsif ($object eq 'ComDef') {
 #			my $command = html_opening_nl($node);
 #			if (defined(get_value($node, 'target'))) {
