@@ -746,6 +746,7 @@ sub strong_close
 	} elsif ($object eq 'CodeBlock') {
 		print OUTPUT "#F\n";
 		print OUTPUT "#Indent\n";
+		print OUTPUT "\n";
 	} elsif ($object eq 'Box') {
 		print OUTPUT "#F\n";
 		print OUTPUT "#Indent\n";
