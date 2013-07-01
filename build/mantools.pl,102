@@ -256,7 +256,6 @@ sub text_open
 		print OUTPUT get_value($node, 'content');
 	} elsif ($object eq 'Chapter') {
 		print OUTPUT text_linefeed($node);
-		print OUTPUT text_linefeed($node);
 		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
 		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n";
 		print OUTPUT text_linefeed($node, TRUE);
@@ -332,7 +331,7 @@ sub text_close
 	my $object = $value->{'object'};
 
 	if ($object eq 'Chapter') {
-#		print OUTPUT "</div>\n";
+		print OUTPUT text_linefeed($node);
 	} elsif ($object eq 'List') {
 		if ((!defined(get_value($node, 'spacing')) || get_value($node, 'spacing') == 0) &&
 				text_linespace($node->getParent)) {
