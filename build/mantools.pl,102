@@ -309,9 +309,7 @@ sub text_open
 #			$command .= "</dt>\n<dd>";
 #			print OUTPUT $command;
 	} elsif ($object eq 'Paragraph') {
-		my $line = text_format_line($node);
-
-		print OUTPUT $line;
+		print OUTPUT text_format_line($node);
 		if (text_linespace($node)) {
 			print OUTPUT text_linefeed($node, TRUE);
 		}
