@@ -334,7 +334,8 @@ sub text_close
 	if ($object eq 'Chapter') {
 #		print OUTPUT "</div>\n";
 	} elsif ($object eq 'List') {
-		if ((!defined(get_value($node, 'spacing')) || get_value($node, 'spacing') == 0) && text_linespace($node->getParent)) {
+		if ((!defined(get_value($node, 'spacing')) || get_value($node, 'spacing') == 0) &&
+				text_linespace($node->getParent)) {
 			print OUTPUT text_linefeed($node, TRUE);
 		}
 	} elsif ($object eq 'ListItem') {
