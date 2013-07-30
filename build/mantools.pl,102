@@ -905,7 +905,7 @@ sub html_open
 			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		}
 	} elsif ($object eq 'Definition') {
-		print OUTPUT html_opening_nl($node)."<dl><dt><b>".$node->getNodeValue()->{'target'}."</b></dt>\n<dd>";
+		print OUTPUT html_opening_nl($node)."<dl><dt><b>".get_value($node, 'target')."</b></dt>\n<dd>";
 	} elsif ($object eq 'ComDef') {
 		my $command = html_opening_nl($node);
 		if (defined(get_value($node, 'target'))) {
