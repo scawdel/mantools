@@ -39,6 +39,39 @@ use constant LIST_NUMERIC	=> 2;
 use constant LIST_UPPER		=> 3;
 use constant LIST_LOWER		=> 4;
 
+# Entity conversions used by the various modes.
+
+my %text_entities = (
+	"lt",		"<",
+	"gt",		">",
+	"quot",		'"',
+	"ldquo",	'"',
+	"rdquo",	'"',
+	"lsquo",	"'",
+	"rsquo",	"'",
+	"ndash",	"--",
+	"nbsp",		"\xa0",
+	"msep",		"--",
+	"amp",		"&"
+);
+
+my %strong_entities = (
+	"lt",		'\<',
+	"gt",		'\>',
+	"quot",		'"',
+	"ldquo",	'"',
+	"rdquo",	'"',
+	"lsquo",	"'",
+	"rsquo",	"'",
+	"ndash",	"\x97",
+	"nbsp",		"\xa0",
+	"msep",		"{f31:\xd5}",
+	"amp",		"&"
+);
+
+my %html_entities = (
+	"msep",		"&rarr;"
+);
 
 # Formatting variables.
 
@@ -294,7 +327,7 @@ sub text_open
 			set_value($node, 'indent', 2);
 		}
 	} elsif ($object eq 'Definition') {
-		print OUTPUT text_indent($node).get_value($node, 'target')."\n";
+		print OUTPUT text_indent($node).substitute_entities(get_value($node, 'target'), %text_entities)."\n";
 		print OUTPUT text_linefeed($node);
 		set_value($node, 'indent', 2);
 	} elsif ($object eq 'ComDef') {
@@ -307,7 +340,7 @@ sub text_open
 		if (defined(get_value($node, 'params'))) {
 			$command .= " ".get_value($node, 'params');
 		}
-		print OUTPUT text_indent($node).$command."\n";
+		print OUTPUT text_indent($node).substitute_entities($command, %text_entities)."\n";
 		print OUTPUT text_linefeed($node);
 		set_value($node, 'indent', 2);
 	} elsif ($object eq 'Paragraph') {
@@ -389,21 +422,7 @@ sub text_format_line
 
 	# Finally, expand all the entities out.
 
-	my %entities = (
-		"lt",		"<",
-		"gt",		">",
-		"quot",		'"',
-		"ldquo",	'"',
-		"rdquo",	'"',
-		"lsquo",	"'",
-		"rsquo",	"'",
-		"ndash",	"--",
-		"nbsp",		"\xa0",
-		"msep",		"--",
-		"amp",		"&"
-	);
-
-	$line = substitute_entities($line, %entities);
+	$line = substitute_entities($line, %text_entities);
 
 	# Indent the first line and identify the wrapping mode.
 
@@ -653,7 +672,7 @@ sub strong_open
 		}
 	} elsif ($object eq 'Definition') {
 		set_value($node, 'indent', 2);
-		print OUTPUT "{f*:".get_value($node, 'target')."}\n";
+		print OUTPUT "{f*:".substitute_entities(get_value($node, 'target'), %strong_entities)."}\n";
 		print OUTPUT "\n";
 		print OUTPUT "#Indent ".strong_indent($node)."\n";
 	} elsif ($object eq 'ComDef') {
@@ -667,7 +686,7 @@ sub strong_open
 		if (defined(get_value($node, 'params'))) {
 			$command .= " {f*/:".get_value($node, 'params')."}";
 		}
-		print OUTPUT $command."\n";
+		print OUTPUT substitute_entities($command, %strong_entities)."\n";
 		print OUTPUT "\n";
 		print OUTPUT "#Indent ".strong_indent($node)."\n";
 	} elsif ($object eq 'Paragraph') {
@@ -802,21 +821,7 @@ sub strong_format_line
 
 	# Convert entities into their target characters.
 
-	my %entities = (
-		"lt",		'\<',
-		"gt",		'\>',
-		"quot",		'"',
-		"ldquo",	'"',
-		"rdquo",	'"',
-		"lsquo",	"'",
-		"rsquo",	"'",
-		"ndash",	"\x97",
-		"nbsp",		"\xa0",
-		"msep",		"{f31:\xd5}",
-		"amp",		"&"
-	);
-
-	$line = substitute_entities($line, %entities);
+	$line = substitute_entities($line, %strong_entities);
 
 	# Output the line of text.
 
@@ -905,7 +910,7 @@ sub html_open
 			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		}
 	} elsif ($object eq 'Definition') {
-		print OUTPUT html_opening_nl($node)."<dl><dt><b>".get_value($node, 'target')."</b></dt>\n<dd>";
+		print OUTPUT html_opening_nl($node)."<dl><dt><b>".substitute_entities(get_value($node, 'target'), %html_entities)."</b></dt>\n<dd>";
 	} elsif ($object eq 'ComDef') {
 		my $command = html_opening_nl($node);
 		if (defined(get_value($node, 'target'))) {
@@ -917,7 +922,7 @@ sub html_open
 			$command .= " <i>".get_value($node, 'params')."</i>";
 		}
 		$command .= "</dt>\n<dd>";
-		print OUTPUT $command;
+		print OUTPUT substitute_entities($command, %html_entities);
 	} elsif ($object eq 'Paragraph') {
 		my $line = html_format_line($node);
 
@@ -996,11 +1001,7 @@ sub html_format_line
 
 	# Sort out any non-standard entities into something that's valid HTML.
 
-	my %entities = (
-		"msep",		"&rarr;"
-	);
-
-	$line = substitute_entities($line, %entities);
+	$line = substitute_entities($line, %html_entities);
 
 	# Remove any trailing whitespace from the line
 
