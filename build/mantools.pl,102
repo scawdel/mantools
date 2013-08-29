@@ -889,11 +889,11 @@ sub html_open
 	} elsif ($object eq 'Subhead') {
 		print OUTPUT "\n<h3>".get_value($node, 'title')."</h3>\n";
 	} elsif ($object eq 'List') {
-		if ($node->{'type'} == LIST_NUMERIC) {
+		if (get_value($node, 'type') == LIST_NUMERIC) {
 			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
-		} elsif ($node->{'type'} == LIST_UPPER) {
+		} elsif (get_value($node, 'type') == LIST_UPPER) {
 			print OUTPUT html_opening_nl($node)."<ol type=\"A\">";
-		} elsif ($node->{'type'} == LIST_LOWER) {
+		} elsif (get_value($node, 'type') == LIST_LOWER) {
 			print OUTPUT html_opening_nl($node)."<ol type=\"a\">";
 		} else {
 			print OUTPUT html_opening_nl($node)."<ul>";
