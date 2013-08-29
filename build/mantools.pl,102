@@ -52,6 +52,7 @@ my %text_entities = (
 	"ndash",	"--",
 	"nbsp",		"\xa0",
 	"msep",		"--",
+	"times",	"x",
 	"amp",		"&"
 );
 
@@ -66,6 +67,7 @@ my %strong_entities = (
 	"ndash",	"\x97",
 	"nbsp",		"\xa0",
 	"msep",		"{f31:\xd5}",
+	"times",	"\xd7",
 	"amp",		"&"
 );
 
