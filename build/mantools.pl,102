@@ -75,6 +75,8 @@ my %html_entities = (
 	"msep",		"&rarr;"
 );
 
+my $html_core_image_base = "";
+
 # Formatting variables.
 
 my $output_preformatted = FALSE;
@@ -94,6 +96,8 @@ foreach my $arg (@ARGV) {
 		$outfile = $1;
 	} elsif ($arg =~ /^-M(.+)/) {
 		$mode = uc($1);
+	} elsif ($arg =~ /^-C(.+)/) {
+		$html_core_image_base = $1;
 	} elsif ($arg =~ /^-D([^=]+)=(.*)/) {
 		$defs{$1} = $2;
 	}
@@ -907,9 +911,9 @@ sub html_open
 	} elsif ($object eq 'Box') {
 		print OUTPUT html_opening_nl($node)."<div style=\"margin-left: 3em; padding: 0 0 0 52px; border-left: 5px solid gray; overflow: hidden;\">";
 		if (lc(get_value($node, 'type')) eq 'info') {
-			print OUTPUT "<img src=\"info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
+			print OUTPUT "<img src=\"".$html_core_image_base."info.png\" width=32 height=32 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		} elsif (lc(get_value($node, 'type')) eq 'warning') {
-			print OUTPUT "<img src=\"warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
+			print OUTPUT "<img src=\"".$html_core_image_base."warning.png\" width=32 height=29 style=\"float: left; margin-left: -42px; margin-top: 0em; padding-top: 0em;\">";
 		}
 	} elsif ($object eq 'Definition') {
 		print OUTPUT html_opening_nl($node)."<dl><dt><b>".substitute_entities(get_value($node, 'target'), %html_entities)."</b></dt>\n<dd>";
