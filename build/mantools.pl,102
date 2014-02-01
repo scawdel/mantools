@@ -153,12 +153,31 @@ while (defined(my $line = <INPUT>)) {
 		my %params = parse_tag($1);
 
 		if ($params{'tag_name'} eq 'define') {
-			# If it's already defined, then either we've defined it twice in the file,
-			# or the file definition has been overridden by a command line definition.
+			my $defn = "";
 
-			if (defined($params{'name'}) && defined($params{'value'}) && !defined($defs{$params{'name'}})) {
-				$defs{$params{'name'}} = $params{'value'};
+			# If the constant is already defined, then either it has been defined
+			# twice in the file or the file definition has been overridden by
+			# a command-line parameter. Either way, we take the existing definition
+			# if there is one.
+
+			if (defined($defs{$params{'name'}})) {
+				$defn = $defs{$params{'name'}};
+			} else {
+				$defn = $params{'value'};
 			}
+
+			# If the mode is text, we need to align the parameter within its
+			# field width.
+
+			if ($mode eq 'TEXT' && defined($params{'length'})) {
+				if (uc($params{'align'}) eq "LEFT") {
+					$defn = sprintf "%-$params{'length'}s", $defn;
+				} elsif (uc($params{'align'}) eq "RIGHT") {
+					$defn = sprintf "%+$params{'length'}s", $defn;
+				}
+			}
+
+			$defs{$params{'name'}} = $defn;
 		} elsif ($params{'tag_name'} eq 'document') {
 			$defs{'title'} = $params{'title'};
 		} elsif ($params{'tag_name'} eq 'chapter') {
