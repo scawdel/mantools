@@ -266,16 +266,9 @@ while (defined(my $line = <INPUT>)) {
 		} elsif ($params{'tag_name'} eq '/definition') {
 			$current_node = $current_node->getParent;
 		} elsif ($params{'tag_name'} eq 'comdef') {
-			my $command = "";
-			if (defined($params{'target'})) {
-				$command = "\n<dl><dt><b>".$params{'target'}."</b>";
-			} else {
-				$command = "\n<dl><dt><b>Command</b>";
+			if (!defined($params{'target'})) {
+				$params{'target'} = "Command";
 			}
-			if (defined($params{'params'})) {
-				$command .= " <i>".$params{'params'}."</i>";
-			}
-			$command .= "</dt>\n<dd>\n";
 			$current_node = Tree::Simple->new({object => 'ComDef', %params}, $current_node);
 		} elsif ($params{'tag_name'} eq '/comdef') {
 			$current_node = $current_node->getParent;
@@ -369,7 +362,7 @@ sub text_open
 		} else {
 			$command .= "Command";
 		}
-		if (defined(get_value($node, 'params'))) {
+		if (defined(get_value($node, 'params')) && get_value($node, 'params') ne "") {
 			$command .= " ".get_value($node, 'params');
 		}
 		print OUTPUT text_indent($node).substitute_entities($command, %text_entities)."\n";
