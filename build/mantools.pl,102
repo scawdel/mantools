@@ -39,6 +39,11 @@ use constant LIST_NUMERIC	=> 2;
 use constant LIST_UPPER		=> 3;
 use constant LIST_LOWER		=> 4;
 
+use constant MODE_TEXT		=> 'TEXT';
+use constant MODE_STRONG	=> 'STRONG';
+use constant MODE_HTML		=> 'HTML';
+use constant MODE_DDF		=> 'DDF';
+
 # Entity conversions used by the various modes.
 
 my %text_entities = (
@@ -113,7 +118,7 @@ if (!defined($mode) || !defined($infile) || !defined($outfile)) {
 
 my $found = FALSE;
 
-foreach my $item (('TEXT', 'STRONG', 'HTML')) {
+foreach my $item ((MODE_TEXT, MODE_STRONG, MODE_HTML)) {
 	if ($item eq $mode) {
 		$found = TRUE;
 	}
@@ -130,7 +135,7 @@ my $current_node = $parse_tree;
 
 open(INPUT, $infile) || die "Can't open input file $infile: $!\n";
 
-if ($mode eq 'STRONG') {
+if ($mode eq MODE_STRONG) {
 	unless ($outfile =~ /\/$/) {
 		$outfile .= '/';
 	}
@@ -169,7 +174,7 @@ while (defined(my $line = <INPUT>)) {
 			# If the mode is text, we need to align the parameter within its
 			# field width.
 
-			if ($mode eq 'TEXT' && defined($params{'length'})) {
+			if ($mode eq MODE_TEXT && defined($params{'length'})) {
 				if (uc($params{'align'}) eq "LEFT") {
 					$defn = sprintf "%-$params{'length'}s", $defn;
 				} elsif (uc($params{'align'}) eq "RIGHT") {
@@ -291,11 +296,11 @@ while (defined(my $line = <INPUT>)) {
 
 # Turn the tree into the requested output.
 
-if ($mode eq 'TEXT') {
+if ($mode eq MODE_TEXT) {
 	$parse_tree->traverse(\&text_open, \&text_close);
-} elsif ($mode eq 'STRONG') {
+} elsif ($mode eq MODE_STRONG) {
 	$parse_tree->traverse(\&strong_open, \&strong_close);
-} elsif ($mode eq 'HTML') {
+} elsif ($mode eq MODE_HTML) {
 	$parse_tree->traverse(\&html_open, \&html_close);
 }
 
