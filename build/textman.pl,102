@@ -65,6 +65,8 @@ my %entities = (
 	"ndash",	"--",
 	"nbsp",		"\xa0",
 	"msep",		"--",
+	"ldquo",	"\"",
+	"rdquo",	"\"",
 	"amp",		"\e"	# & goes to ESC, then is converted back to &
 );
 
@@ -424,4 +426,3 @@ sub parse_tag
 
 	return %attributes;
 }
-
