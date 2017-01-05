@@ -313,15 +313,19 @@ sub text_open
 	if ($object eq 'Literal') {
 		print OUTPUT get_value($node, 'content');
 	} elsif ($object eq 'Chapter') {
+		my $title = substitute_entities(get_value($node, 'title'), %text_entities);
+
 		print OUTPUT text_linefeed($node);
-		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
-		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n";
+		print OUTPUT text_indent($node).$title."\n";
+		print OUTPUT text_indent($node)."-" x length($title)."\n";
 		print OUTPUT text_linefeed($node, TRUE);
 		set_value($node, 'indent', 2);
 	} elsif ($object eq 'Subhead') {
+		my $title = substitute_entities(get_value($node, 'title'), %text_entities);
+
 		print OUTPUT text_linefeed($node);
-		print OUTPUT text_indent($node).get_value($node, 'title')."\n";
-		print OUTPUT text_indent($node)."-" x length(get_value($node, 'title'))."\n";
+		print OUTPUT text_indent($node).$title."\n";
+		print OUTPUT text_indent($node)."-" x length($title)."\n";
 		print OUTPUT text_linefeed($node, TRUE);
 	} elsif ($object eq 'List') {
 		if (get_value($node, 'type') == LIST_BULLET) {
@@ -649,17 +653,19 @@ sub strong_open
 
 		# Output the start of the chapter and set the flags.
 
-		print OUTPUT $defs{'title'}.": ".get_value($node, 'title')."\n";
+		my $title = substitute_entities(get_value($node, 'title'), %strong_entities);
+
+		print OUTPUT $defs{'title'}.": ".$title."\n";
 		if (defined($defs{'sprites'})) {
 			print OUTPUT "#SpriteFile ".$defs{'sprites'}."\n";
 		}
-		print OUTPUT "{fh1:".get_value($node, 'title')."}\n";
+		print OUTPUT "{fh1:".$title."}\n";
 		print OUTPUT "#Line\n";
 
 		set_value($node, 'indent', 2);
 		print OUTPUT "#Indent ".strong_indent($node)."\n";
 	} elsif ($object eq 'Subhead') {
-		print OUTPUT "{fh2:".get_value($node, 'title')."}\n\n";
+		print OUTPUT "{fh2:".substitute_entities(get_value($node, 'title'), %strong_entities)."}\n\n";
 	} elsif ($object eq 'List') {
 		set_value($node, 'indent', 1);
 		print OUTPUT "#Indent ".strong_indent($node)."\n";
@@ -757,7 +763,7 @@ sub strong_close
 			}
 
 			if ($index >= 0) {
-				$previous = "\x8f Previous: <".get_value($siblings->[$index], 'title')."=>".get_value($siblings->[$index], 'file').">";
+				$previous = "\x8f Previous: <".substitute_entities(get_value($siblings->[$index], 'title'), %strong_entities)."=>".get_value($siblings->[$index], 'file').">";
 			}
 		}
 
@@ -769,7 +775,7 @@ sub strong_close
 			}
 
 			if ($index < $node->getParent->getChildCount) {
-				$next = "\x8f Next: <".get_value($siblings->[$index], 'title')."=>".get_value($siblings->[$index], 'file').">";
+				$next = "\x8f Next: <".substitute_entities(get_value($siblings->[$index], 'title'), %strong_entities)."=>".get_value($siblings->[$index], 'file').">";
 			}
 		}
 
@@ -910,9 +916,9 @@ sub html_open
 	if ($object eq 'Literal') {
 		print OUTPUT get_value($node, 'content');
 	} elsif ($object eq 'Chapter') {
-		print OUTPUT "\n<div><a name=\"".get_value($node, 'file')."\"></a><h2>".get_value($node, 'title')."</h2>\n";
+		print OUTPUT "\n<div><a name=\"".get_value($node, 'file')."\"></a><h2>".substitute_entities(get_value($node, 'title'), %html_entities)."</h2>\n";
 	} elsif ($object eq 'Subhead') {
-		print OUTPUT "\n<h3>".get_value($node, 'title')."</h3>\n";
+		print OUTPUT "\n<h3>".substitute_entities(get_value($node, 'title'), %html_entities)."</h3>\n";
 	} elsif ($object eq 'List') {
 		if (get_value($node, 'type') == LIST_NUMERIC) {
 			print OUTPUT html_opening_nl($node)."<ol type=\"1\">";
