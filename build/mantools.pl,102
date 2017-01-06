@@ -1129,11 +1129,23 @@ sub substitute_entities
 {
 	my ($line, %entities) = @_;
 
+	my $ampersand = '';
+
 	foreach my $entity (keys %entities) {
 		my $sub = $entities{$entity};
 
-		while ($line =~ /&$entity;/) {
-			$line = $`.$sub.$';
+		if ($sub eq '&') {
+			$ampersand = $entity;
+		} else {
+			while ($line =~ /&$entity;/) {
+				$line = $`.$sub.$';
+			}
+		}
+	}
+
+	if ($ampersand ne '') {
+		while ($line =~ /&$ampersand;/) {
+			$line = $`.'&'.$';
 		}
 	}
 
