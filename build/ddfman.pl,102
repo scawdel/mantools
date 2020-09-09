@@ -6,7 +6,7 @@
 #
 #   http://www.stevefryatt.org.uk/software/
 #
-# Licensed under the EUPL, Version 1.1 only (the "Licence");
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
 # You may not use this work except in compliance with the
 # Licence.
 #
@@ -255,7 +255,7 @@ sub output_line
 	if ($line =~ /^<li>/) {
 		if ($list_type != LIST_NONE) {
 			if ($list_type == LIST_BULLET) {
-				$line =~ s/^<li>\s*/"††è{tab}"/e;
+				$line =~ s/^<li>\s*/"ÔøΩÔøΩÔøΩ{tab}"/e;
 			} elsif ($list_type == LIST_NUMERIC) {
 				$line =~ s/^<li>\s*/sprintf ("%2d. ", $$list_value++)."{tab}"/e;
 			} elsif ($list_type == LIST_UPPER) {

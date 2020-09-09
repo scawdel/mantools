@@ -6,7 +6,7 @@
 #
 #   http://www.stevefryatt.org.uk/software/
 #
-# Licensed under the EUPL, Version 1.1 only (the "Licence");
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
 # You may not use this work except in compliance with the
 # Licence.
 #
@@ -452,7 +452,7 @@ sub output_line
 			my $indent_string = "";
 
 			if ($list_type == LIST_BULLET) {
-				$indent_string = '';
+				$indent_string = 'ï¿½';
 			} elsif ($list_type == LIST_NUMERIC) {
 				$indent_string = $$list_value++.".";
 			} elsif ($list_type == LIST_UPPER) {
@@ -496,7 +496,7 @@ sub link_line
 	my $line = "";
 
 	if ($chapter > 0) {
-		$line .= " Previous: ".$chapters[$chapter - 1];
+		$line .= "ï¿½ Previous: ".$chapters[$chapter - 1];
 	}
 
 	if ($chapter > 0 && $chapter < @chapters - 1) {
@@ -504,7 +504,7 @@ sub link_line
 	}
 
 	if ($chapter < @chapters - 1) {
-		$line .= " Next: ".$chapters[$chapter + 1];
+		$line .= "ï¿½ Next: ".$chapters[$chapter + 1];
 	}
 
 	return $line."\n";
