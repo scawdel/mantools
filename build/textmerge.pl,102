@@ -1,0 +1,61 @@
+#!/usr/bin/perl -w
+#
+# Copyright 2012, Stephen Fryatt
+#
+# This file is part of ManTools:
+#
+#   http://www.stevefryatt.org.uk/software/
+#
+# Licensed under the EUPL, Version 1.2 only (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+#
+# You may obtain a copy of the Licence at:
+#
+#   http://joinup.ec.europa.eu/software/page/eupl
+#
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis, WITHOUT WARRANTIES
+# OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+
+# TextMerge -- Interleave two text files into one, so that
+#              File 2 is inserted into File 1 after a given
+#              number of lines.
+#
+# Usage: TextMerge <outfile> <infile1> <infile2> <lines>
+
+use strict;
+
+if (@ARGV != 4) {
+	die "Incorrect parameters:\nUsage: TextMerge <outfile> <infile1> <infile2> <lines>\n";
+}
+
+my $out = $ARGV[0];
+my $in1 = $ARGV[1];
+my $in2 = $ARGV[2];
+my $lines = $ARGV[3];
+
+open(OUT, ">".$out) || die "Can't open output file $out: $!\n";
+open(IN1, $in1) || die "Can't open input file $in1: $!\n";
+open(IN2, $in2) || die "Can't open input file $in2: $!\n";
+
+while (defined(my $line = <IN1>) && $lines-- > 0) {
+	print OUT $line;
+}
+
+while (defined(my $line = <IN2>)) {
+	print OUT $line;
+}
+
+while (defined(my $line = <IN1>)) {
+	print OUT $line;
+}
+
+close(IN1);
+close(IN2);
+close(OUT);
+

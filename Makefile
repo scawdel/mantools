@@ -27,7 +27,7 @@
 
 ARCHIVE := mantools
 
-EXECUTABLES := mantools.pl,102 textman.pl,102 strongman.pl,102 htmlman.pl,102 ddfman.pl,102
+EXECUTABLES := mantools.pl,102 textman.pl,102 strongman.pl,102 htmlman.pl,102 ddfman.pl,102 textmerge.pl,102
 SUFFIX := .pl,102
 
 TARGETFOLDER = $(SFTOOLS_BIN)
