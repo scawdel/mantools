@@ -37,12 +37,34 @@ To build its manual, Mantools must have already been installed. Simply running
 again will cause the manual to be built if Mantools was installed correctly the first time around.
 
 
+BindHelp
+--------
+
+In order to build StrongHelp manuals, ManTools requires BindHelp from [OSLib](http://ro-oslib.sourceforge.net/). OSlib will be required in its own right for building any C-based projects in these repositories, so the following steps could serve a dual purpose.
+
+To build OSLib, and with it BindHelp, check the OSLib code out into a suitable location:
+
+	svn co https://svn.code.sf.net/p/ro-oslib/code/trunk/\!OSLib OSLib
+
+It is now possible to drop into the OSLib folder and build the library:
+
+	cd OSLib
+	make ELFOBJECTTYPE=HARDFPU
+
+If this completes successfully, it should now be possible to take a copy of the BindHelp executable and store it in the location indicated by `$SFTOOLS_BIN`:
+
+	mkdir -p $SFTOOLS_BIN
+	cp Bin/bindhelp $SFTOOLS_BIN
+
+This will allow the Shared Makefiles to find it if a StrongHelp target needs to be built.
+
+
 Licence
 -------
 
 ManTools are licensed under the EUPL, Version 1.2 only (the "Licence"); you may not use this work except in compliance with the Licence.
 
-You may obtain a copy of the Licence at <http://joinup.ec.europa.eu/software/page/eupl>
+You may obtain a copy of the Licence at <http://joinup.ec.europa.eu/software/page/eupl>.
 
 Unless required by applicable law or agreed to in writing, software distributed under the Licence is distributed on an "**as is**"; basis, **without warranties or conditions of any kind**, either express or implied.
 
